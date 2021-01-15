@@ -23,59 +23,13 @@ namespace project_manage_system_backend.Controllers
         [HttpPost]
         public async Task<IActionResult> AddRepo(RequestAddRepoDto addRepoDto)
         {
-            var response = await _repoService.CheckRepoExist(addRepoDto.url);
-
-            if (response.IsSucess)
-            {
-                try
-                {
-                    if (!addRepoDto.sonarqubeUrl.EndsWith("/"))
-                        addRepoDto.sonarqubeUrl += "/";
-                    var result = await _repoService.checkSonarqubeAliveAndProjectExisted(addRepoDto.sonarqubeUrl, addRepoDto.accountColonPw, addRepoDto.projectKey);
-                    bool isSonarqubeExisted = result.success;
-
-                    if (addRepoDto.isSonarqube && !isSonarqubeExisted)
-                        return Ok(new ResponseDto() { success = false, message = result.message });
-
-                    var project = _repoService.GetProjectByProjectId(addRepoDto.projectId);
-                    Repo model = new Repo()
-                    {
-                        Name = response.name,
-                        Owner = response.owner.login,
-                        Url = response.html_url,
-                        Project = project,
-                        isSonarqube = addRepoDto.isSonarqube,
-                        sonarqubeUrl = isSonarqubeExisted && addRepoDto.isSonarqube ? addRepoDto.sonarqubeUrl : string.Empty,
-                        accountColonPw = isSonarqubeExisted && addRepoDto.isSonarqube ? addRepoDto.accountColonPw : string.Empty,
-                        projectKey = isSonarqubeExisted && addRepoDto.isSonarqube ? addRepoDto.projectKey : string.Empty
-                    };
-                    _repoService.CreateRepo(model);
-                    return Ok(new ResponseDto
-                    {
-                        success = true,
-                        message = "Add Success"
-                    });
-                }
-                catch (Exception e)
-                {
-                    return Ok(new ResponseDto
-                    {
-                        success = false,
-                        message = "Add Fail:" + e.Message
-                    });
-
-                }
-            }
-            else
-            {
-                return Ok(new ResponseDto
-                {
-                    success = false,
-                    message = "Add Fail: " + response.message
-                });
-
-            }
+            var result = await _repoService.CheckGithubAndSonarqubeExist(addRepoDto);
+            return Ok(new ResponseDto { success = result.success, message = result.message });
         }
+
+
+
+
 
         [Authorize]
         [HttpDelete]
