@@ -220,7 +220,8 @@ namespace PMS_test.ControllersTest
                 total = 48,
                 weeks = weeks,
                 totalAdditions = isExcepted ? 1075 : 0,
-                totalDeletions = isExcepted ? 746 : 0
+                totalDeletions = isExcepted ? 746 : 0,
+                commitsHtmlUrl = $"https://github.com/{_owner}/{_name}/commits?author={_owner}"
             };
             List<ContributorsCommitActivityDto> contributorsCommitActivities = new List<ContributorsCommitActivityDto> { contributorsCommitActivityDto };
             contributorsCommitActivityDto.total = 50;

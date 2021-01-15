@@ -25,6 +25,8 @@ namespace PMS_test.ControllersTest
         private const string _name = "a";
         private const string _failFakeRepository = "https://github.com/" + _owner + "/" + _name;
         private const string _successFakeRepository = "https://github.com/" + _owner + "/testRepo";
+        private const string _successFakeRepository2 = "https://github.com/" + _owner + "/testRepo2";
+        private const string _successFakeSonarqube = "http://192.168.0.1/api/project_analyses/search?project=ppp";
 
 
         public RepoServiceTests()
@@ -61,6 +63,12 @@ namespace PMS_test.ControllersTest
                 url = _failFakeRepository
             };
 
+            ResponseDto responseDto = new ResponseDto
+            {
+                success = true,
+                message = "success"
+            };
+
             string response = JsonConvert.SerializeObject(dto);
             mockHttp.When(HttpMethod.Get, _failFakeRepository.Replace("github.com", "api.github.com/repos"))
                     .Respond("application/json", response);
@@ -70,6 +78,11 @@ namespace PMS_test.ControllersTest
             response = JsonConvert.SerializeObject(dto);
             mockHttp.When(HttpMethod.Get, _successFakeRepository.Replace("github.com", "api.github.com/repos"))
                     .Respond("application/json", response);
+
+            response = JsonConvert.SerializeObject(responseDto);
+            mockHttp.When(HttpMethod.Get, _successFakeSonarqube)
+                .WithHeaders("Authorization", "Basic aaabbb")
+                .Respond("application/json", response);
             return mockHttp.ToHttpClient();
         }
 
@@ -110,40 +123,70 @@ namespace PMS_test.ControllersTest
         }
 
         [Fact]
-        async public void TestCreateRepoFali()
+        async public void TestCheckGithubAndSonarqubeExistFail()
         {
-            var response = await _repoService.CheckRepoExist(_failFakeRepository);
-
-            Repo repo = new Repo
+            RequestAddRepoDto noSonarqube = new RequestAddRepoDto()
             {
-                Name = response.name,
-                Owner = response.owner.login,
-                Url = response.url,
-                Project = _repoService.GetProjectByProjectId(1),
+                projectId = (await _dbContext.Projects.ToListAsync())[0].ID,
+                url = "",
+                isSonarqube = false
             };
-            var actual = Assert.Throws<Exception>(() => _repoService.CreateRepo(repo));
-            Assert.Equal("Duplicate repo!", actual.Message);
+
+            var response = await _repoService.CheckGithubAndSonarqubeExist(noSonarqube);
+            Assert.False(response.success);
+            Assert.Equal("Url Error", response.message);
         }
 
         [Fact]
-        async public void TestCreateRepoSuccess()
+        async public void TestCheckGithubAndSonarqubeExistFail2()
         {
-            var response = await _repoService.CheckRepoExist(_successFakeRepository);
-
-            Repo repo = new Repo
+            RequestAddRepoDto sonarqube = new RequestAddRepoDto()
             {
-                Name = response.name,
-                Owner = response.owner.login,
-                Url = response.url,
-                Project = _repoService.GetProjectByProjectId(1),
+                projectId = (await _dbContext.Projects.ToListAsync())[0].ID,
+                url = _successFakeRepository,
+                isSonarqube = true
             };
-            _repoService.CreateRepo(repo);
-            var actual = _dbContext.Repositories.Find(2);
-            Assert.Equal("testRepo", actual.Name);
-            Assert.Equal(2, actual.ID);
-            Assert.Equal(_owner, actual.Owner);
-            Assert.Equal(_successFakeRepository, actual.Url);
-            Assert.Equal(1, actual.Project.ID);
+
+            var response = await _repoService.CheckGithubAndSonarqubeExist(sonarqube);
+            Assert.False(response.success);
+            Assert.Equal("Sonarqube Error ", response.message);
+
+            
+        }
+
+        [Fact]
+        async public void TestCheckGithubAndSonarqubeExistSuccess()
+        {
+            RequestAddRepoDto noSonarqube = new RequestAddRepoDto()
+            {
+                projectId = (await _dbContext.Projects.ToListAsync())[0].ID,
+                url = _successFakeRepository,
+                isSonarqube = false
+            };
+            var response = await _repoService.CheckGithubAndSonarqubeExist(noSonarqube);
+            Assert.True(response.success);
+            Assert.Equal("Add Success", response.message);
+
+            response = await _repoService.CheckGithubAndSonarqubeExist(noSonarqube);
+            Assert.False(response.success);
+            Assert.Equal("Duplicate repo!", response.message);
+        }
+
+        [Fact]
+        async public void TestCheckGithubAndSonarqubeExistSuccess2()
+        {
+            RequestAddRepoDto sonarqube = new RequestAddRepoDto()
+            {
+                projectId = (await _dbContext.Projects.ToListAsync())[0].ID,
+                url = _successFakeRepository,
+                isSonarqube = true,
+                sonarqubeUrl = "http://192.168.0.1",
+                projectKey = "ppp",
+                accountColonPw = "aaabbb"
+            };
+            var response = await _repoService.CheckGithubAndSonarqubeExist(sonarqube);
+            Assert.True(response.success);
+            Assert.Equal("Add Success", response.message);
         }
 
         [Fact]

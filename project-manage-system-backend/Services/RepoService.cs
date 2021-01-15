@@ -21,7 +21,7 @@ namespace project_manage_system_backend.Services
             _httpClient.Timeout = TimeSpan.FromSeconds(3);
         }
 
-        public async Task<ResponseGithubRepoInfoDto> CheckRepoExist(string url)
+        private async Task<ResponseGithubRepoInfoDto> CheckRepoExist(string url)
         {
             const string GITHUB_COM = "github.com";
             string matchPatten = $@"^http(s)?://{GITHUB_COM}/([\w-]+.)+[\w-]+(/[\w- ./?%&=])?$";
@@ -38,24 +38,18 @@ namespace project_manage_system_backend.Services
             return msg;
         }
 
-        public void CreateRepo(Repo model)
+        private void CreateRepo(Repo model)
         {
             //get project by id
-            var project = _dbContext.Projects.Include(r => r.Repositories).Where(p => p.ID == model.Project.ID).First();
-
-            var repo = project.Repositories.Where(r => r.Url == model.Url);
-
+            var repo = model.Project.Repositories.Where(r => r.Url == model.Url);
             // check duplicate =>  add or throw exception
             if (!repo.Any())
                 _dbContext.Add(model);
             else
                 throw new Exception("Duplicate repo!");
-
             //save
             if (_dbContext.SaveChanges() == 0)
-            {
                 throw new Exception("DB can't save!");
-            }
         }
 
         public List<Repo> GetRepositoryByProjectId(int id)
@@ -66,7 +60,8 @@ namespace project_manage_system_backend.Services
 
         public Project GetProjectByProjectId(int id)
         {
-            var project = _dbContext.Projects.Single(p => p.ID == id);
+            var project = _dbContext.Projects.Include(r => r.Repositories).Where(p => p.ID == id).First();
+            //var project = _dbContext.Projects.Single(p => p.ID == id);
             return project;
         }
 
@@ -84,30 +79,72 @@ namespace project_manage_system_backend.Services
             }
         }
 
-        public async Task<ResponseDto> checkSonarqubeAliveAndProjectExisted(string url, string accountColonPw, string projectKey)
+        private async Task<ResponseDto> CheckSonarqubeAliveAndProjectExisted(RequestAddRepoDto addRepoDto)
         {
+            ResponseDto responseDto = new ResponseDto() { success = false, message = "Sonarqube Error " };
             try
             {
-                url += $"/api/project_analyses/search?project={projectKey}";
-                _httpClient.DefaultRequestHeaders.Add("Authorization", accountColonPw);
-                var result = await _httpClient.GetAsync(url);
-                ResponseDto responseDto = new ResponseDto()
-                {
-                    success = result.IsSuccessStatusCode,
-                    message = result.IsSuccessStatusCode ? "Sonarqube online" : "Sonarqube Project doesn't exist"
-                };
+                var sonarqubeUrl = addRepoDto.sonarqubeUrl + $"api/project_analyses/search?project={addRepoDto.projectKey}";
+                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Basic {addRepoDto.accountColonPw}");
+                var result = await _httpClient.GetAsync(sonarqubeUrl);
+                responseDto.success = result.IsSuccessStatusCode;
+                responseDto.message = result.IsSuccessStatusCode ? "Sonarqube online" : "Sonarqube Project doesn't exist";
                 return responseDto;
             }
             catch (Exception ex)
             {
-                ResponseDto responseDto = new ResponseDto()
-                {
-                    success = false,
-                    message = ex.Message + "Sonarqube Error"
-                };
+                responseDto.message.Insert(0, ex.Message);
                 return responseDto;
             }
+        }
 
+        public async Task<ResponseDto> CheckGithubAndSonarqubeExist(RequestAddRepoDto addRepoDto)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(addRepoDto.sonarqubeUrl) && !addRepoDto.sonarqubeUrl.EndsWith("/"))
+                    addRepoDto.sonarqubeUrl += "/";
+                var githubResponse = await CheckRepoExist(addRepoDto.url);
+                var sonarqubeResponse = await CheckSonarqubeAliveAndProjectExisted(addRepoDto);
+                ResponseDto result = new ResponseDto() { success = githubResponse.IsSucess, message = githubResponse.message };
+                if (githubResponse.IsSucess)
+                {//github repo存在
+                    if ((!addRepoDto.isSonarqube) || sonarqubeResponse.success)
+                    {//有sonarqube＆sonarqube存在 或 沒有sonarqube
+                        Repo model = MakeRepoModel(githubResponse, addRepoDto);
+                        CreateRepo(model);
+                        result.message = "Add Success";
+                        return result;
+                    }
+                    else
+                    {//有sonarqube 但是sonarqube有問題
+                        result.success = sonarqubeResponse.success;
+                        result.message = sonarqubeResponse.message;
+                    }
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDto() { message = ex.Message, success = false };
+            }
+
+        }
+
+        private Repo MakeRepoModel(ResponseGithubRepoInfoDto githubResponse, RequestAddRepoDto addRepoDto)
+        {
+            var project = GetProjectByProjectId(addRepoDto.projectId);
+            return new Repo()
+            {
+                Name = githubResponse.name,
+                Owner = githubResponse.owner.login,
+                Url = githubResponse.html_url,
+                Project = project,
+                isSonarqube = addRepoDto.isSonarqube,
+                sonarqubeUrl = addRepoDto.sonarqubeUrl,
+                accountColonPw = addRepoDto.accountColonPw,
+                projectKey = addRepoDto.projectKey
+            };
         }
     }
 }
