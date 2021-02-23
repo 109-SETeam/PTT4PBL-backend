@@ -6,7 +6,6 @@ using project_manage_system_backend.Models;
 using project_manage_system_backend.Services;
 using project_manage_system_backend.Shares;
 using RichardSzalay.MockHttp;
-using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Net.Http;
@@ -151,7 +150,7 @@ namespace PMS_test.ControllersTest
             Assert.False(response.success);
             Assert.Equal("Sonarqube Error ", response.message);
 
-            
+
         }
 
         [Fact]

@@ -237,7 +237,7 @@ namespace project_manage_system_backend.Controllers
                         message = "Delete success!"
                     });
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     return Ok(new ResponseDto
                     {
@@ -245,7 +245,7 @@ namespace project_manage_system_backend.Controllers
                         message = $"Delete Error：{e.Message}"
                     });
                 }
-                
+
             }
             return BadRequest("Who are you?");
         }

@@ -117,7 +117,7 @@ namespace PMS_test.ControllersTest
         [Fact]
         public async Task TestRequestCommitInfo()
         {
-            var commitInfo = await _repoInfoService.RequestCommitInfo(1, null);
+            var commitInfo = await _repoInfoService.RequestCommit(1, null);
 
             List<WeekTotalData> weekTotalDatas = new List<WeekTotalData>()
             {
@@ -191,7 +191,7 @@ namespace PMS_test.ControllersTest
             dto.closeIssues = JsonConvert.DeserializeObject<List<ResponseGithubRepoIssuesDto>>(CreateFakeIssues("closed"));
             var excepted = JsonConvert.SerializeObject(dto);
 
-            var issues = await _repoInfoService.RequestIssueInfo(1, "KENFOnwogneorngIONefokwNGFIONROPGNro");
+            var issues = await _repoInfoService.RequestIssue(1, "KENFOnwogneorngIONefokwNGFIONROPGNro");
             string actual = JsonConvert.SerializeObject(issues);
 
             Assert.Equal(excepted, actual);
