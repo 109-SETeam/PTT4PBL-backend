@@ -1,8 +1,9 @@
-﻿using project_manage_system_backend.Dtos;
+using project_manage_system_backend.Dtos;
 using project_manage_system_backend.Models;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace project_manage_system_backend.RepoInfo
@@ -13,7 +14,7 @@ namespace project_manage_system_backend.RepoInfo
         {
         }
 
-        public override Task<List<CodebaseDto>> RequestCodebase(Repo repo)
+        public override Task<List<ResponseCodebaseDto>> RequestCodebase(Repo repo)
         {
             throw new NotImplementedException();
         }
