@@ -21,19 +21,19 @@ namespace project_manage_system_backend.Services
             _httpClient.Timeout = TimeSpan.FromSeconds(3);
         }
 
-        private async Task<ResponseGithubRepoInfoDto> CheckRepoExist(string url)
+        private async Task<ResponseRepoInfoDto> CheckRepoExist(string url)
         {
             const string GITHUB_COM = "github.com";
             string matchPatten = $@"^http(s)?://{GITHUB_COM}/([\w-]+.)+[\w-]+(/[\w- ./?%&=])?$";
             if (!Regex.IsMatch(url, matchPatten))
-                return new ResponseGithubRepoInfoDto() { IsSucess = false, message = "Url Error" };
+                return new ResponseRepoInfoDto() { IsSucess = false, message = "Url Error" };
 
             url = url.Replace(".git", "");
             url = url.Replace("github.com", "api.github.com/repos");
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "request");
             var result = await _httpClient.GetAsync(url);
             string content = await result.Content.ReadAsStringAsync();
-            var msg = JsonSerializer.Deserialize<ResponseGithubRepoInfoDto>(content);
+            var msg = JsonSerializer.Deserialize<ResponseRepoInfoDto>(content);
             msg.IsSucess = string.IsNullOrEmpty(msg.message);
             return msg;
         }
@@ -131,7 +131,7 @@ namespace project_manage_system_backend.Services
 
         }
 
-        private Repo MakeRepoModel(ResponseGithubRepoInfoDto githubResponse, RequestAddRepoDto addRepoDto)
+        private Repo MakeRepoModel(ResponseRepoInfoDto githubResponse, RequestAddRepoDto addRepoDto)
         {
             var project = GetProjectByProjectId(addRepoDto.projectId);
             return new Repo()
@@ -140,10 +140,10 @@ namespace project_manage_system_backend.Services
                 Owner = githubResponse.owner.login,
                 Url = githubResponse.html_url,
                 Project = project,
-                isSonarqube = addRepoDto.isSonarqube,
-                sonarqubeUrl = addRepoDto.sonarqubeUrl,
-                accountColonPw = addRepoDto.accountColonPw,
-                projectKey = addRepoDto.projectKey
+                IsSonarqube = addRepoDto.isSonarqube,
+                SonarqubeUrl = addRepoDto.sonarqubeUrl,
+                AccountColonPw = addRepoDto.accountColonPw,
+                ProjectKey = addRepoDto.projectKey
             };
         }
     }

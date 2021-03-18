@@ -68,8 +68,8 @@ namespace PMS_test.ControllersTest
             DateTime closed = Convert.ToDateTime("2020/12/03");
             DateTime created = Convert.ToDateTime("2020/12/01");
             dto.averageDealwithIssueTime = TimeSpan.FromSeconds((created - closed).TotalSeconds).ToString(@"dd\.hh\:mm\:\:ss\.\.");
-            dto.openIssues = JsonConvert.DeserializeObject<List<ResponseGithubRepoIssuesDto>>(CreateFakeIssues("open"));
-            dto.closeIssues = JsonConvert.DeserializeObject<List<ResponseGithubRepoIssuesDto>>(CreateFakeIssues("closed"));
+            dto.openIssues = JsonConvert.DeserializeObject<List<ResponseRepoIssuesDto>>(CreateFakeIssues("open"));
+            dto.closeIssues = JsonConvert.DeserializeObject<List<ResponseRepoIssuesDto>>(CreateFakeIssues("closed"));
 
             mockHttp.When(HttpMethod.Get, _openIssueUrl)
                     .Respond("application/json", CreateFakeIssues("open"));
@@ -88,14 +88,14 @@ namespace PMS_test.ControllersTest
             DateTime closed = Convert.ToDateTime("2020-12-03");
             DateTime created = Convert.ToDateTime("2020-12-01");
 
-            List<ResponseGithubRepoIssuesDto> openList = new List<ResponseGithubRepoIssuesDto>()
+            List<ResponseRepoIssuesDto> openList = new List<ResponseRepoIssuesDto>()
             {
-                new ResponseGithubRepoIssuesDto()
+                new ResponseRepoIssuesDto()
                 { created_at=created.ToString("yyyy-MM-dd HH:mm:ss"),number =1,state="open",title="test",user = new user{html_url="",login="aaa" },closed_at="",html_url="" }
             };
-            List<ResponseGithubRepoIssuesDto> closedList = new List<ResponseGithubRepoIssuesDto>()
+            List<ResponseRepoIssuesDto> closedList = new List<ResponseRepoIssuesDto>()
             {
-                new ResponseGithubRepoIssuesDto()
+                new ResponseRepoIssuesDto()
                 { created_at=created.ToString("yyyy-MM-dd HH:mm:ss"),closed_at=closed.ToString("yyyy-MM-dd HH:mm:ss"),number=2,state="closed",title="test",user = new user{html_url="",login="aaa" },html_url=""}
             };
             string openjson = JsonConvert.SerializeObject(openList);
@@ -167,10 +167,10 @@ namespace PMS_test.ControllersTest
         [Fact]
         public async Task TestRequestCodebase()
         {
-            List<CodebaseDto> codebaseDtos = new List<CodebaseDto>()
+            List<ResponseCodebaseDto> codebaseDtos = new List<ResponseCodebaseDto>()
             {
-                new CodebaseDto(){ Date = "10/25", NumberOfRowsAdded = 17220, NumberOfRowsDeleted = 0, NumberOfRows = 17220 },
-                new CodebaseDto(){ Date = "11/01", NumberOfRowsAdded = 112, NumberOfRowsDeleted = -193, NumberOfRows = 17139 }
+                new ResponseCodebaseDto(){ Date = "10/25", NumberOfRowsAdded = 17220, NumberOfRowsDeleted = 0, NumberOfRows = 17220 },
+                new ResponseCodebaseDto(){ Date = "11/01", NumberOfRowsAdded = 112, NumberOfRowsDeleted = -193, NumberOfRows = 17139 }
             };
 
             var codebaseInfo = await _repoInfoService.RequestCodebase(1);
@@ -187,8 +187,8 @@ namespace PMS_test.ControllersTest
             DateTime closed = Convert.ToDateTime("2020-12-03");
             DateTime created = Convert.ToDateTime("2020-12-01");
             dto.averageDealwithIssueTime = TimeSpan.FromSeconds((created - closed).TotalSeconds).ToString(@"dd\.hh\:mm\:\:ss\.\.").Replace("..", "Seconds").Replace(".", "Day(s) ").Replace("::", "Minute(s) ").Replace(":", "Hour(s) "); ;
-            dto.openIssues = JsonConvert.DeserializeObject<List<ResponseGithubRepoIssuesDto>>(CreateFakeIssues("open"));
-            dto.closeIssues = JsonConvert.DeserializeObject<List<ResponseGithubRepoIssuesDto>>(CreateFakeIssues("closed"));
+            dto.openIssues = JsonConvert.DeserializeObject<List<ResponseRepoIssuesDto>>(CreateFakeIssues("open"));
+            dto.closeIssues = JsonConvert.DeserializeObject<List<ResponseRepoIssuesDto>>(CreateFakeIssues("closed"));
             var excepted = JsonConvert.SerializeObject(dto);
 
             var issues = await _repoInfoService.RequestIssue(1, "KENFOnwogneorngIONefokwNGFIONROPGNro");

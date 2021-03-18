@@ -16,21 +16,23 @@
         /// <summary>
         /// 有無sonarqube
         /// </summary>
-        public bool isSonarqube { get; set; }
+        public bool IsSonarqube { get; set; }
         /// <summary>
         /// foramt: "帳號:密碼"
         /// encryption: base64
         /// </summary>
-        public string accountColonPw { get; set; }
+        public string AccountColonPw { get; set; }
 
         /// <summary>
         /// Sonarqube url
         /// </summary>
-        public string sonarqubeUrl { get; set; }
+        public string SonarqubeUrl { get; set; }
 
         /// <summary>
         /// sonarqube projectkey
         /// </summary>
-        public string projectKey { get; set; }
+        public string ProjectKey { get; set; }
+
+        public string RepoId { get; set; }
     }
 }

@@ -111,7 +111,7 @@ namespace project_manage_system_backend.Services
             var responseTask = await _httpClient.GetAsync(url);
 
             string resultContent = await responseTask.Content.ReadAsStringAsync();
-            var userInfo = JsonSerializer.Deserialize<ResponseGuthubUserInfoDto>(resultContent);//反序列化
+            var userInfo = JsonSerializer.Deserialize<ResponseUserInfoDto>(resultContent);//反序列化
             User result = new User
             {
                 Account = "github_" + userInfo.login,

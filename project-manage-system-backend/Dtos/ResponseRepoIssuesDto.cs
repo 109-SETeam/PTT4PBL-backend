@@ -14,7 +14,7 @@
 
     }
 
-    public class ResponseGithubRepoIssuesDto
+    public class ResponseRepoIssuesDto
     {
         /// <summary>
         /// issue number

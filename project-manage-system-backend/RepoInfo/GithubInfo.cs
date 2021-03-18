@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -14,6 +15,7 @@ namespace project_manage_system_backend.RepoInfo
     {
         public GithubInfo(string oauthToken, HttpClient httpClient = null) : base(oauthToken, httpClient)
         {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", oauthToken);
         }
 
         public override async Task<List<CodebaseDto>> RequestCodebase(Repo repo)
@@ -142,14 +144,14 @@ namespace project_manage_system_backend.RepoInfo
             return result;
         }
 
-        private async Task<List<ResponseGithubRepoIssuesDto>> GetRepoIssues(string state, string url, int perPage)
+        private async Task<List<ResponseRepoIssuesDto>> GetRepoIssues(string state, string url, int perPage)
         {
-            List<ResponseGithubRepoIssuesDto> result = new List<ResponseGithubRepoIssuesDto>();
+            List<ResponseRepoIssuesDto> result = new List<ResponseRepoIssuesDto>();
             int page = 1;
 
             var response = await _httpClient.GetAsync(url + $"/issues?state={state}&per_page=100&page={page}&sort=created");
             string content = await response.Content.ReadAsStringAsync();
-            var tempList = JsonSerializer.Deserialize<List<ResponseGithubRepoIssuesDto>>(content);
+            var tempList = JsonSerializer.Deserialize<List<ResponseRepoIssuesDto>>(content);
             result.AddRange(tempList);
 
             return result;

@@ -15,10 +15,10 @@ namespace project_manage_system_backend.RepoInfo
         {
             _httpClient = httpClient ?? new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "request");
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", oauthToken);
+            
         }
 
-        public abstract Task<List<CodebaseDto>> RequestCodebase(Repo repo);
+        public abstract Task<List<ResponseCodebaseDto>> RequestCodebase(Repo repo);
 
         public abstract Task<CommitInfoDto> RequestCommit(Repo repo);
 

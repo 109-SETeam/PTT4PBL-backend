@@ -52,7 +52,7 @@ namespace PMS_test.ControllersTest
         {
             var mockHttp = new MockHttpMessageHandler();
 
-            ResponseGithubRepoInfoDto dto = new ResponseGithubRepoInfoDto
+            ResponseRepoInfoDto dto = new ResponseRepoInfoDto
             {
                 IsSucess = true,
                 html_url = $"https://github.com/{_owner}",
