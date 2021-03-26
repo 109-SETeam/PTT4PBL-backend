@@ -23,7 +23,7 @@ namespace project_manage_system_backend.Dtos
         public List<DayCommit> DetailDatas { get; set; }
     }
 
-    public class CommitInfoDto
+    public class RequestCommitInfoDto
     {
         public List<WeekTotalData> WeekTotalData { get; set; }
 

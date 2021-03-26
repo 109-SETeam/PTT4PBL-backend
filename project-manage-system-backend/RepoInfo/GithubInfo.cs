@@ -18,7 +18,7 @@ namespace project_manage_system_backend.RepoInfo
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", oauthToken);
         }
 
-        public override async Task<List<CodebaseDto>> RequestCodebase(Repo repo)
+        public override async Task<List<ResponseCodebaseDto>> RequestCodebase(Repo repo)
         {
             string repoURL = "https://api.github.com/repos/" + repo.Owner + "/" + repo.Name + "/stats/code_frequency";
 
@@ -28,16 +28,16 @@ namespace project_manage_system_backend.RepoInfo
             var contents = await response.Content.ReadAsStringAsync();
             var codebases = Newtonsoft.Json.JsonConvert.DeserializeObject<List<int[]>>(contents);
 
-            List<CodebaseDto> codebaseSet = new List<CodebaseDto>();
+            List<ResponseCodebaseDto> codebaseSet = new List<ResponseCodebaseDto>();
 
             foreach (var codebase in codebases)
             {
-                CodebaseDto codebaseDto = new CodebaseDto()
+                ResponseCodebaseDto codebaseDto = new ResponseCodebaseDto()
                 {
-                    Date = DateHandler.ConvertToDateString(codebase[0]),
-                    NumberOfRowsAdded = Convert.ToInt32(codebase[1]),
-                    NumberOfRowsDeleted = Convert.ToInt32(codebase[2]),
-                    NumberOfRows = Convert.ToInt32(codebase[1]) + Convert.ToInt32(codebase[2])
+                    date = DateHandler.ConvertToDateString(codebase[0]),
+                    numberOfRowsAdded = Convert.ToInt32(codebase[1]),
+                    numberOfRowsDeleted = Convert.ToInt32(codebase[2]),
+                    numberOfRows = Convert.ToInt32(codebase[1]) + Convert.ToInt32(codebase[2])
                 };
 
                 codebaseSet.Add(codebaseDto);
@@ -47,14 +47,14 @@ namespace project_manage_system_backend.RepoInfo
 
             foreach (var codebase in codebaseSet)
             {
-                codebase.NumberOfRows += thisWeekRows;
-                thisWeekRows = codebase.NumberOfRows;
+                codebase.numberOfRows += thisWeekRows;
+                thisWeekRows = codebase.numberOfRows;
             }
 
             return codebaseSet;
         }
 
-        public override async Task<CommitInfoDto> RequestCommit(Repo repo)
+        public override async Task<RequestCommitInfoDto> RequestCommit(Repo repo)
         {
             string url = "https://api.github.com/repos/" + repo.Owner + "/" + repo.Name + "/stats/commit_activity";
 
@@ -78,7 +78,7 @@ namespace project_manage_system_backend.RepoInfo
                 detailChartDatas.Add(ConvertToDetailChartData(commitInfo));
             }
 
-            return new CommitInfoDto
+            return new RequestCommitInfoDto
             {
                 WeekTotalData = weekChartDatas,
                 DayOfWeekData = detailChartDatas
@@ -134,12 +134,12 @@ namespace project_manage_system_backend.RepoInfo
 
             if (closedTime.Count != 0)
             {
-                result.averageDealwithIssueTime = TimeSpan.FromSeconds(closedTime.Average()).ToString(@"dd\.hh\:mm\:\:ss\.\.");
-                result.averageDealwithIssueTime = result.averageDealwithIssueTime.Replace("..", "Seconds").Replace("::", "Minute(s) ").Replace(":", "Hour(s) ").Replace(".", "Day(s) ");
+                result.averageDealWithIssueTime = TimeSpan.FromSeconds(closedTime.Average()).ToString(@"dd\.hh\:mm\:\:ss\.\.");
+                result.averageDealWithIssueTime = result.averageDealWithIssueTime.Replace("..", "Seconds").Replace("::", "Minute(s) ").Replace(":", "Hour(s) ").Replace(".", "Day(s) ");
             }
             else
             {
-                result.averageDealwithIssueTime = "No Data";
+                result.averageDealWithIssueTime = "No Data";
             }
             return result;
         }

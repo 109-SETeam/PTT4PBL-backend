@@ -54,7 +54,7 @@ namespace PMS_test.ControllersTest
 
             ResponseRepoInfoDto dto = new ResponseRepoInfoDto
             {
-                IsSucess = true,
+                success = true,
                 html_url = $"https://github.com/{_owner}",
                 message = "",
                 name = _name,
@@ -124,7 +124,7 @@ namespace PMS_test.ControllersTest
         [Fact]
         async public void TestCheckGithubAndSonarqubeExistFail()
         {
-            RequestAddRepoDto noSonarqube = new RequestAddRepoDto()
+            AddRepoDto noSonarqube = new AddRepoDto()
             {
                 projectId = (await _dbContext.Projects.ToListAsync())[0].ID,
                 url = "",
@@ -139,7 +139,7 @@ namespace PMS_test.ControllersTest
         [Fact]
         async public void TestCheckGithubAndSonarqubeExistFail2()
         {
-            RequestAddRepoDto sonarqube = new RequestAddRepoDto()
+            AddRepoDto sonarqube = new AddRepoDto()
             {
                 projectId = (await _dbContext.Projects.ToListAsync())[0].ID,
                 url = _successFakeRepository,
@@ -156,7 +156,7 @@ namespace PMS_test.ControllersTest
         [Fact]
         async public void TestCheckGithubAndSonarqubeExistSuccess()
         {
-            RequestAddRepoDto noSonarqube = new RequestAddRepoDto()
+            AddRepoDto noSonarqube = new AddRepoDto()
             {
                 projectId = (await _dbContext.Projects.ToListAsync())[0].ID,
                 url = _successFakeRepository,
@@ -174,14 +174,14 @@ namespace PMS_test.ControllersTest
         [Fact]
         async public void TestCheckGithubAndSonarqubeExistSuccess2()
         {
-            RequestAddRepoDto sonarqube = new RequestAddRepoDto()
+            AddRepoDto sonarqube = new AddRepoDto()
             {
                 projectId = (await _dbContext.Projects.ToListAsync())[0].ID,
                 url = _successFakeRepository,
                 isSonarqube = true,
                 sonarqubeUrl = "http://192.168.0.1",
                 projectKey = "ppp",
-                accountColonPw = "aaabbb"
+                accountColonPassword = "aaabbb"
             };
             var response = await _repoService.CheckGithubAndSonarqubeExist(sonarqube);
             Assert.True(response.success);

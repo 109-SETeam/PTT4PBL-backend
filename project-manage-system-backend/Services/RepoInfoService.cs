@@ -21,7 +21,7 @@ namespace project_manage_system_backend.Services
             _repoInfoFactory = new RepoInfoFactory();
         }
 
-        public async Task<CommitInfoDto> RequestCommit(int repoId, string oauthToken)
+        public async Task<RequestCommitInfoDto> RequestCommit(int repoId, string oauthToken)
         {
             Repo repo = GetRepoById(repoId);
             IRepoInfo repoInfo = _repoInfoFactory.CreateRepoInfo(repo, _httpClient, oauthToken);

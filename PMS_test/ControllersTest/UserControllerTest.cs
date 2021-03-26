@@ -52,7 +52,7 @@ namespace PMS_test.ControllersTest
         {
             UserInfoDto dto = new UserInfoDto
             {
-                Name = "testEditUser",
+                name = "testEditUser",
             };
 
             var content = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
@@ -67,7 +67,7 @@ namespace PMS_test.ControllersTest
 
             string expectedName = "testEditUser";
 
-            Assert.Equal(expectedName, actual.Name);
+            Assert.Equal(expectedName, actual.name);
         }
 
     }

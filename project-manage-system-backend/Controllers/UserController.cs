@@ -59,7 +59,7 @@ namespace project_manage_system_backend.Controllers
         {
             try
             {
-                _userService.EditUserName(User.Identity.Name, userinfoDto.Name);
+                _userService.EditUserName(User.Identity.Name, userinfoDto.name);
                 return Ok(new ResponseDto
                 {
                     success = true,

@@ -16,5 +16,4 @@ namespace project_manage_system_backend.Dtos
         public string component { get; set; }
         public bool bestValue { get; set; }
     }
-
 }

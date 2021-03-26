@@ -114,7 +114,7 @@ namespace project_manage_system_backend.Services
 
                 foreach (UserProject userProject in projectMember)
                 {
-                    result.Add(new UserInfoDto { Id = userProject.User.Account, Name = userProject.User.Name });
+                    result.Add(new UserInfoDto { id = userProject.User.Account, name = userProject.User.Name });
                 }
 
                 return result;

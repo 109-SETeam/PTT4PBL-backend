@@ -11,7 +11,7 @@ namespace project_manage_system_backend.Dtos
         public int deletions { get; set;}
         public int total { get; set;}
     }
-    public class RequestGitlabContributorDto
+    public class RequestContributorDto
     {
         public string name { get; set; }
         public string email { get; set; }

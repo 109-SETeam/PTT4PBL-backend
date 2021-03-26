@@ -67,7 +67,7 @@ namespace PMS_test.ControllersTest
             RepoIssuesDto dto = new RepoIssuesDto();
             DateTime closed = Convert.ToDateTime("2020/12/03");
             DateTime created = Convert.ToDateTime("2020/12/01");
-            dto.averageDealwithIssueTime = TimeSpan.FromSeconds((created - closed).TotalSeconds).ToString(@"dd\.hh\:mm\:\:ss\.\.");
+            dto.averageDealWithIssueTime = TimeSpan.FromSeconds((created - closed).TotalSeconds).ToString(@"dd\.hh\:mm\:\:ss\.\.");
             dto.openIssues = JsonConvert.DeserializeObject<List<ResponseRepoIssuesDto>>(CreateFakeIssues("open"));
             dto.closeIssues = JsonConvert.DeserializeObject<List<ResponseRepoIssuesDto>>(CreateFakeIssues("closed"));
 
@@ -153,7 +153,7 @@ namespace PMS_test.ControllersTest
                 new DayOfWeekData(){DetailDatas=dayCommitsSecond,Week="12/08"}
             };
 
-            var expected = new CommitInfoDto
+            var expected = new RequestCommitInfoDto
             {
                 DayOfWeekData = dayOfWeekDatas,
                 WeekTotalData = weekTotalDatas
@@ -169,11 +169,11 @@ namespace PMS_test.ControllersTest
         {
             List<ResponseCodebaseDto> codebaseDtos = new List<ResponseCodebaseDto>()
             {
-                new ResponseCodebaseDto(){ Date = "10/25", NumberOfRowsAdded = 17220, NumberOfRowsDeleted = 0, NumberOfRows = 17220 },
-                new ResponseCodebaseDto(){ Date = "11/01", NumberOfRowsAdded = 112, NumberOfRowsDeleted = -193, NumberOfRows = 17139 }
+                new ResponseCodebaseDto(){ date = "10/25", numberOfRowsAdded = 17220, numberOfRowsDeleted = 0, numberOfRows = 17220 },
+                new ResponseCodebaseDto(){ date = "11/01", numberOfRowsAdded = 112, numberOfRowsDeleted = -193, numberOfRows = 17139 }
             };
 
-            var codebaseInfo = await _repoInfoService.RequestCodebase(1);
+            var codebaseInfo = await _repoInfoService.RequestCodebase(1, "todo");
 
             var expectedStr = JsonConvert.SerializeObject(codebaseDtos);
             var codebaseStr = JsonConvert.SerializeObject(codebaseInfo);
@@ -186,7 +186,7 @@ namespace PMS_test.ControllersTest
             RepoIssuesDto dto = new RepoIssuesDto();
             DateTime closed = Convert.ToDateTime("2020-12-03");
             DateTime created = Convert.ToDateTime("2020-12-01");
-            dto.averageDealwithIssueTime = TimeSpan.FromSeconds((created - closed).TotalSeconds).ToString(@"dd\.hh\:mm\:\:ss\.\.").Replace("..", "Seconds").Replace(".", "Day(s) ").Replace("::", "Minute(s) ").Replace(":", "Hour(s) "); ;
+            dto.averageDealWithIssueTime = TimeSpan.FromSeconds((created - closed).TotalSeconds).ToString(@"dd\.hh\:mm\:\:ss\.\.").Replace("..", "Seconds").Replace(".", "Day(s) ").Replace("::", "Minute(s) ").Replace(":", "Hour(s) "); ;
             dto.openIssues = JsonConvert.DeserializeObject<List<ResponseRepoIssuesDto>>(CreateFakeIssues("open"));
             dto.closeIssues = JsonConvert.DeserializeObject<List<ResponseRepoIssuesDto>>(CreateFakeIssues("closed"));
             var excepted = JsonConvert.SerializeObject(dto);

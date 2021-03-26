@@ -2,7 +2,7 @@
 
 namespace project_manage_system_backend.Dtos
 {
-
+    // Request 與 Response 共用
     public class Author
     {
         public string login { get; set; }

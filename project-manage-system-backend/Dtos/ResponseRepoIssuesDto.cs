@@ -11,9 +11,9 @@
         /// user url
         /// </summary>
         public string html_url { get; set; }
-
     }
 
+    // Response 與 Request 共用
     public class ResponseRepoIssuesDto
     {
         /// <summary>
@@ -50,6 +50,5 @@
         /// issue closed datetime
         /// </summary>
         public string closed_at { get; set; }
-
     }
 }

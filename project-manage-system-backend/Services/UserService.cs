@@ -58,16 +58,16 @@ namespace project_manage_system_backend.Services
             var user = _dbContext.Users.Find(account);
             if (user == null)
                 throw new Exception("User not found!");
-            return new UserInfoDto { Id = user.Account, Name = user.Name, AvatarUrl = user.AvatarUrl };
+            return new UserInfoDto { id = user.Account, name = user.Name, avatarUrl = user.AvatarUrl };
         }
 
         public List<UserInfoDto> GetAllUser(string inviterId)
         {
             return _dbContext.Users.Where(u => u.Account != inviterId).Select(u => new UserInfoDto
             {
-                Id = u.Account,
-                Name = u.Name,
-                AvatarUrl = u.AvatarUrl
+                id = u.Account,
+                name = u.Name,
+                avatarUrl = u.AvatarUrl
             }).ToList();
         }
 
@@ -120,9 +120,9 @@ namespace project_manage_system_backend.Services
             return _dbContext.Users.Where(u => u.Account != account).ToList();
         }
 
-        public void DeleteUserByAccount(string accouunt)
+        public void DeleteUserByAccount(string account)
         {
-            var user = _dbContext.Users.Include(u => u.Projects).ThenInclude(up => up.Project).ThenInclude(upp => upp.Owner).FirstOrDefault(u => u.Account == accouunt);
+            var user = _dbContext.Users.Include(u => u.Projects).ThenInclude(up => up.Project).ThenInclude(upp => upp.Owner).FirstOrDefault(u => u.Account == account);
             if (user == null)
                 throw new Exception("User not found!");
             if (user.Projects.Any())
@@ -136,14 +136,14 @@ namespace project_manage_system_backend.Services
                 throw new Exception("Delet user fail!");
         }
 
-        public bool IsAdmin(string accouunt)
+        public bool IsAdmin(string account)
         {
-            return _dbContext.Users.Find(accouunt).Authority.Equals("Admin");
+            return _dbContext.Users.Find(account).Authority.Equals("Admin");
         }
 
-        public bool EditUserInfo(string accounr, JsonPatchDocument<User> newUserInfo)
+        public bool EditUserInfo(string account, JsonPatchDocument<User> newUserInfo)
         {
-            var user = GetUserModel(accounr);
+            var user = GetUserModel(account);
             newUserInfo.ApplyTo(user);
             return !(_dbContext.SaveChanges() == 0);
         }

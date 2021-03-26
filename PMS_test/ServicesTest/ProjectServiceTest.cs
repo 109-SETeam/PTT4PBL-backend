@@ -121,7 +121,7 @@ namespace PMS_test.ServicesTest
             List<UserInfoDto> projectMembers = _projectService.GetProjectMember(1);
 
             Assert.Equal(3, projectMembers.Count);
-            Assert.Equal("testUser1", projectMembers[0].Name);
+            Assert.Equal("testUser1", projectMembers[0].name);
         }
 
         [Fact]

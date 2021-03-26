@@ -201,7 +201,7 @@ namespace project_manage_system_backend.Controllers
 
         [Authorize]
         [HttpPatch("{projectId}")]
-        public IActionResult EfitProjectNameByAdmin(int projectId, [FromBody] JsonPatchDocument<Project> newProject)
+        public IActionResult EditProjectNameByAdmin(int projectId, [FromBody] JsonPatchDocument<Project> newProject)
         {
             if (_userService.IsAdmin(User.Identity.Name))
             {

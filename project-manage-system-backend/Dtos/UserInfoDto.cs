@@ -2,8 +2,8 @@
 {
     public class UserInfoDto
     {
-        public string Id { get; set; }
-        public string Name { get; set; }
-        public string AvatarUrl { get; set; }
+        public string id { get; set; }
+        public string name { get; set; }
+        public string avatarUrl { get; set; }
     }
 }

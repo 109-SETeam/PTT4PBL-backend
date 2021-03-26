@@ -26,7 +26,7 @@ namespace project_manage_system_backend.Services
             const string GITHUB_COM = "github.com";
             string matchPatten = $@"^http(s)?://{GITHUB_COM}/([\w-]+.)+[\w-]+(/[\w- ./?%&=])?$";
             if (!Regex.IsMatch(url, matchPatten))
-                return new ResponseRepoInfoDto() { IsSucess = false, message = "Url Error" };
+                return new ResponseRepoInfoDto() { success = false, message = "Url Error" };
 
             url = url.Replace(".git", "");
             url = url.Replace("github.com", "api.github.com/repos");
@@ -34,7 +34,7 @@ namespace project_manage_system_backend.Services
             var result = await _httpClient.GetAsync(url);
             string content = await result.Content.ReadAsStringAsync();
             var msg = JsonSerializer.Deserialize<ResponseRepoInfoDto>(content);
-            msg.IsSucess = string.IsNullOrEmpty(msg.message);
+            msg.success = string.IsNullOrEmpty(msg.message);
             return msg;
         }
 
@@ -79,13 +79,13 @@ namespace project_manage_system_backend.Services
             }
         }
 
-        private async Task<ResponseDto> CheckSonarqubeAliveAndProjectExisted(RequestAddRepoDto addRepoDto)
+        private async Task<ResponseDto> CheckSonarqubeAliveAndProjectExisted(AddRepoDto addRepoDto)
         {
             ResponseDto responseDto = new ResponseDto() { success = false, message = "Sonarqube Error " };
             try
             {
                 var sonarqubeUrl = addRepoDto.sonarqubeUrl + $"api/project_analyses/search?project={addRepoDto.projectKey}";
-                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Basic {addRepoDto.accountColonPw}");
+                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Basic {addRepoDto.accountColonPassword}");
                 var result = await _httpClient.GetAsync(sonarqubeUrl);
                 responseDto.success = result.IsSuccessStatusCode;
                 responseDto.message = result.IsSuccessStatusCode ? "Sonarqube online" : "Sonarqube Project doesn't exist";
@@ -98,7 +98,7 @@ namespace project_manage_system_backend.Services
             }
         }
 
-        public async Task<ResponseDto> CheckGithubAndSonarqubeExist(RequestAddRepoDto addRepoDto)
+        public async Task<ResponseDto> CheckGithubAndSonarqubeExist(AddRepoDto addRepoDto)
         {
             try
             {
@@ -106,8 +106,8 @@ namespace project_manage_system_backend.Services
                     addRepoDto.sonarqubeUrl += "/";
                 var githubResponse = await CheckRepoExist(addRepoDto.url);
                 var sonarqubeResponse = await CheckSonarqubeAliveAndProjectExisted(addRepoDto);
-                ResponseDto result = new ResponseDto() { success = githubResponse.IsSucess, message = githubResponse.message };
-                if (githubResponse.IsSucess)
+                ResponseDto result = new ResponseDto() { success = githubResponse.success, message = githubResponse.message };
+                if (githubResponse.success)
                 {//github repo存在
                     if ((!addRepoDto.isSonarqube) || sonarqubeResponse.success)
                     {//有sonarqube＆sonarqube存在 或 沒有sonarqube
@@ -131,7 +131,7 @@ namespace project_manage_system_backend.Services
 
         }
 
-        private Repo MakeRepoModel(ResponseRepoInfoDto githubResponse, RequestAddRepoDto addRepoDto)
+        private Repo MakeRepoModel(ResponseRepoInfoDto githubResponse, AddRepoDto addRepoDto)
         {
             var project = GetProjectByProjectId(addRepoDto.projectId);
             return new Repo()
@@ -142,7 +142,7 @@ namespace project_manage_system_backend.Services
                 Project = project,
                 IsSonarqube = addRepoDto.isSonarqube,
                 SonarqubeUrl = addRepoDto.sonarqubeUrl,
-                AccountColonPw = addRepoDto.accountColonPw,
+                AccountColonPw = addRepoDto.accountColonPassword,
                 ProjectKey = addRepoDto.projectKey
             };
         }

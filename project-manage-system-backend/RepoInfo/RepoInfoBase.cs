@@ -20,7 +20,7 @@ namespace project_manage_system_backend.RepoInfo
 
         public abstract Task<List<ResponseCodebaseDto>> RequestCodebase(Repo repo);
 
-        public abstract Task<CommitInfoDto> RequestCommit(Repo repo);
+        public abstract Task<RequestCommitInfoDto> RequestCommit(Repo repo);
 
         public abstract Task<List<ContributorsCommitActivityDto>> RequestContributorsActivity(Repo repo);
 
