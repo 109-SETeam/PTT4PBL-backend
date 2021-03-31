@@ -8,13 +8,14 @@ namespace project_manage_system_backend.Dtos
         public string login { get; set; }
         public string avatar_url { get; set; }
         public string html_url { get; set; }
+        public string email { get; set; }
     }
     /// <summary>
     /// w - Start of the week, given as a Unix timestamp.
     /// a - Number of additions
     /// d - Number of deletions
     /// c - Number of commits
-    /// w_s - convert w to string date of week
+    /// ws - convert w to string date of week
     /// </summary>
     public class Week
     {
