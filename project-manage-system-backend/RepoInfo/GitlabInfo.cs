@@ -29,6 +29,7 @@ namespace project_manage_system_backend.RepoInfo
             RequestCommitInfoDto requestCommitInfo = new RequestCommitInfoDto();
             List<RequestCommitsDto> requestCommits = await GetRequestCommits(repo.RepoId);
             requestCommitInfo.WeekTotalData = GetWeekTotalDatas(requestCommits);
+            requestCommitInfo.DayOfWeekData = GetDayOfWeekDatas(requestCommits);
 
             return requestCommitInfo;
         }
@@ -37,7 +38,7 @@ namespace project_manage_system_backend.RepoInfo
         {
             List<WeekTotalData> weekTotalDatas = new List<WeekTotalData>();
             List<Week> weeks = BuildWeeks(requestCommits[^1].committed_date);
-            
+
             foreach (var requestCommit in requestCommits)
             {
                 String commitWeek = GetDateOfWeek(requestCommit.committed_date).ToShortDateString();
@@ -62,13 +63,15 @@ namespace project_manage_system_backend.RepoInfo
             {
                 List<DayCommit> dayCommits = new List<DayCommit>();
                 dayOfWeekData.Add(new DayOfWeekData { Week = week.ws, DetailDatas = dayCommits });
+                DateTime weekDate = DateTime.Parse(week.ws);
                 for (int i = 0; i < 7; i++)
                 {
-                    dayCommits.Add(new DayCommit { Day = DateHandler.ConvertToDayOfWeek(i) });
+                    int commitsCount = requestCommits.FindAll(requestCommit => { return requestCommit.committed_date.Date == weekDate.Date; }).Count;
+                    dayCommits.Add(new DayCommit { Day = DateHandler.ConvertToDayOfWeek(i), Commit = commitsCount });
+                    weekDate = weekDate.AddDays(1);
                 }
             }
 
-            // 實作 Commit To Date
             return dayOfWeekData;
         }
 

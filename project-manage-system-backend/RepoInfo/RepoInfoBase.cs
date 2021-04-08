@@ -2,7 +2,6 @@
 using project_manage_system_backend.Models;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace project_manage_system_backend.RepoInfo
@@ -15,7 +14,7 @@ namespace project_manage_system_backend.RepoInfo
         {
             _httpClient = httpClient ?? new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "request");
-            
+
         }
 
         public abstract Task<List<ResponseCodebaseDto>> RequestCodebase(Repo repo);
