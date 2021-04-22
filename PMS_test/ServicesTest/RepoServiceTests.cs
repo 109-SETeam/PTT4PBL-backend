@@ -24,7 +24,6 @@ namespace PMS_test.ControllersTest
         private const string _name = "a";
         private const string _failFakeRepository = "https://github.com/" + _owner + "/" + _name;
         private const string _successFakeRepository = "https://github.com/" + _owner + "/testRepo";
-        private const string _successFakeRepository2 = "https://github.com/" + _owner + "/testRepo2";
         private const string _successFakeSonarqube = "http://192.168.0.1/api/project_analyses/search?project=ppp";
 
 
