@@ -362,3 +362,9 @@ MigrationBackup/
 # Migrations
 Migrations/
 # End of https://www.toptal.com/developers/gitignore/api/visualstudio
+
+SonarScannerMsbuild/
+coverage/
+*.ps1
+*.cd
+.sonarqube

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using project_manage_system_backend.Dtos;
-using project_manage_system_backend.Models;
 using project_manage_system_backend.Services;
 using project_manage_system_backend.Shares;
 using System;
@@ -21,18 +20,14 @@ namespace project_manage_system_backend.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> AddRepo(RequestAddRepoDto addRepoDto)
+        public async Task<IActionResult> AddRepo(AddRepoDto addRepoDto)
         {
             var result = await _repoService.CheckGithubAndSonarqubeExist(addRepoDto);
             return Ok(new ResponseDto { success = result.success, message = result.message });
         }
 
-
-
-
-
         [Authorize]
-        [HttpDelete]
+        [HttpDelete("{projectId}/{repoId}")]
         public IActionResult DeleteRepo(int repoId, int projectId)
         {
             try
@@ -56,7 +51,7 @@ namespace project_manage_system_backend.Controllers
 
         [Authorize]
         [HttpGet("{id}")]
-        public IActionResult GetRepositoryByProjectId(int id)
+        public IActionResult GetRepoByProjectId(int id)
         {
             var result = _repoService.GetRepositoryByProjectId(id);
             return Ok(result);

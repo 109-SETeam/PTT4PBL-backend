@@ -1,7 +1,7 @@
 ﻿namespace project_manage_system_backend.Dtos
 {
 
-    public class RequestAddRepoDto
+    public class AddRepoDto
     {
         public int projectId { get; set; }
 
@@ -13,7 +13,7 @@
         /// foramt: "帳號:密碼"
         /// encryption:base64
         /// </summary>
-        public string accountColonPw { get; set; }
+        public string accountColonPassword { get; set; }
 
         /// <summary>
         /// Sonarqube網址

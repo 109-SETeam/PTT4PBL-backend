@@ -5,9 +5,9 @@
         public string login { get; set; }
     }
 
-    public class ResponseGithubRepoInfoDto
+    public class ResponseRepoInfoDto
     {
-        public bool IsSucess { get; set; }
+        public bool success { get; set; }
         public string name { get; set; }
         public string url { get; set; }
         public string html_url { get; set; }

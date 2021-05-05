@@ -6,7 +6,6 @@ using project_manage_system_backend.Models;
 using project_manage_system_backend.Services;
 using project_manage_system_backend.Shares;
 using RichardSzalay.MockHttp;
-using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Net.Http;
@@ -25,7 +24,6 @@ namespace PMS_test.ControllersTest
         private const string _name = "a";
         private const string _failFakeRepository = "https://github.com/" + _owner + "/" + _name;
         private const string _successFakeRepository = "https://github.com/" + _owner + "/testRepo";
-        private const string _successFakeRepository2 = "https://github.com/" + _owner + "/testRepo2";
         private const string _successFakeSonarqube = "http://192.168.0.1/api/project_analyses/search?project=ppp";
 
 
@@ -53,9 +51,9 @@ namespace PMS_test.ControllersTest
         {
             var mockHttp = new MockHttpMessageHandler();
 
-            ResponseGithubRepoInfoDto dto = new ResponseGithubRepoInfoDto
+            ResponseRepoInfoDto dto = new ResponseRepoInfoDto
             {
-                IsSucess = true,
+                success = true,
                 html_url = $"https://github.com/{_owner}",
                 message = "",
                 name = _name,
@@ -125,7 +123,7 @@ namespace PMS_test.ControllersTest
         [Fact]
         async public void TestCheckGithubAndSonarqubeExistFail()
         {
-            RequestAddRepoDto noSonarqube = new RequestAddRepoDto()
+            AddRepoDto noSonarqube = new AddRepoDto()
             {
                 projectId = (await _dbContext.Projects.ToListAsync())[0].ID,
                 url = "",
@@ -140,7 +138,7 @@ namespace PMS_test.ControllersTest
         [Fact]
         async public void TestCheckGithubAndSonarqubeExistFail2()
         {
-            RequestAddRepoDto sonarqube = new RequestAddRepoDto()
+            AddRepoDto sonarqube = new AddRepoDto()
             {
                 projectId = (await _dbContext.Projects.ToListAsync())[0].ID,
                 url = _successFakeRepository,
@@ -151,13 +149,13 @@ namespace PMS_test.ControllersTest
             Assert.False(response.success);
             Assert.Equal("Sonarqube Error ", response.message);
 
-            
+
         }
 
         [Fact]
         async public void TestCheckGithubAndSonarqubeExistSuccess()
         {
-            RequestAddRepoDto noSonarqube = new RequestAddRepoDto()
+            AddRepoDto noSonarqube = new AddRepoDto()
             {
                 projectId = (await _dbContext.Projects.ToListAsync())[0].ID,
                 url = _successFakeRepository,
@@ -175,14 +173,14 @@ namespace PMS_test.ControllersTest
         [Fact]
         async public void TestCheckGithubAndSonarqubeExistSuccess2()
         {
-            RequestAddRepoDto sonarqube = new RequestAddRepoDto()
+            AddRepoDto sonarqube = new AddRepoDto()
             {
                 projectId = (await _dbContext.Projects.ToListAsync())[0].ID,
                 url = _successFakeRepository,
                 isSonarqube = true,
                 sonarqubeUrl = "http://192.168.0.1",
                 projectKey = "ppp",
-                accountColonPw = "aaabbb"
+                accountColonPassword = "aaabbb"
             };
             var response = await _repoService.CheckGithubAndSonarqubeExist(sonarqube);
             Assert.True(response.success);

@@ -11,10 +11,10 @@
         /// user url
         /// </summary>
         public string html_url { get; set; }
-
     }
 
-    public class ResponseGithubRepoIssuesDto
+    // Response 與 Request 共用
+    public class ResponseRepoIssuesDto
     {
         /// <summary>
         /// issue number
@@ -50,6 +50,5 @@
         /// issue closed datetime
         /// </summary>
         public string closed_at { get; set; }
-
     }
 }
