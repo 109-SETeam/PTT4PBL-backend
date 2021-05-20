@@ -34,7 +34,7 @@ namespace PMS_test.ServicesTest
             _dbContext.Database.EnsureCreated();
             _client = CreateMockClient();
             _gitlabInfo = new GitlabInfo(token, _client);
-            _repo = new Repo { RepoId = repoId };
+            _repo = new Repo { RepoId = repoId,  };
         }
 
         private static DbConnection CreateInMemoryDatabase()
@@ -62,12 +62,27 @@ namespace PMS_test.ServicesTest
                     total = 98
                 }
             });
+
+            List<RequestContributorDto> responseOfRequestContributors = new List<RequestContributorDto>();
+
+            responseOfRequestContributors.Add(new RequestContributorDto
+            {
+                commits = 2,
+                email = "selab@gmail.com",
+                name = "selab"
+            });
+                
             string commitsUrl = $"https://sgit.csie.ntut.edu.tw/gitlab/api/v4/projects/{repoId}/repository/commits?{token}&with_stats=true&per_page=100";
-            string response = Newtonsoft.Json.JsonConvert.SerializeObject(responseOfCommit);
+            string contributorUrl = $"https://sgit.csie.ntut.edu.tw/gitlab/api/v4/projects/{repoId}/repository/contributors?{token}";
+
+            string commitsResponse = Newtonsoft.Json.JsonConvert.SerializeObject(responseOfCommit);
+            string contributorResponse = Newtonsoft.Json.JsonConvert.SerializeObject(responseOfRequestContributors);
+
             Dictionary<string, string> headers = new Dictionary<string, string>();
             headers.Add("X-Total-Pages", "2");
-            mockHttp.When(HttpMethod.Get, commitsUrl).Respond(headers, "application/json", response);
-            mockHttp.When(HttpMethod.Get, commitsUrl+"&page=2").Respond("application/json", response);
+            mockHttp.When(HttpMethod.Get, commitsUrl).Respond(headers, "application/json", commitsResponse);
+            mockHttp.When(HttpMethod.Get, commitsUrl+"&page=2").Respond("application/json", commitsResponse);
+            mockHttp.When(HttpMethod.Get, contributorUrl).Respond("application/json", contributorResponse);
 
             return mockHttp.ToHttpClient();
         }
@@ -115,6 +130,14 @@ namespace PMS_test.ServicesTest
             Assert.Equal(dayOfWeekDatas[0].DetailDatas[6].Commit, response.DayOfWeekData[0].DetailDatas[6].Commit);
         }
 
+        [Fact]
+        public async void TestRequestContributor()
+        {
+            var response = await _gitlabInfo.RequestContributorsActivity(_repo);
+
+            Assert.Equal("selab", response[0].author.login);
+            Assert.Equal("selab@gmail.com", response[0].author.email);
+        }
     }
 }
 
