@@ -140,7 +140,7 @@ namespace project_manage_system_backend.RepoInfo
         {
             foreach (var commit in commitsResult)
             {
-                String commitWeek = GetDateOfWeek(commit.committed_date).ToShortDateString();
+                string commitWeek = GetDateOfWeek(commit.committed_date).ToShortDateString();
                 foreach (var contributor in contributors)
                 {
                     if (contributor.author.login.Equals(commit.committer_name) && contributor.author.email.Equals(commit.committer_email))
