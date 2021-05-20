@@ -137,6 +137,21 @@ namespace PMS_test.ServicesTest
 
             Assert.Equal("selab", response[0].author.login);
             Assert.Equal("selab@gmail.com", response[0].author.email);
+            Assert.Equal(2, response[0].total);
+            Assert.Equal(104, response[0].totalAdditions);
+            Assert.Equal(92, response[0].totalDeletions);
+
+            Assert.Equal(104, response[0].weeks[0].a);
+            Assert.Equal(92, response[0].weeks[0].d);
+            Assert.Equal(2, response[0].weeks[0].c);
+            Assert.Equal(0, response[0].weeks[0].w);
+            Assert.Equal("2021/4/18", response[0].weeks[0].ws);
+
+            Assert.Equal(0, response[0].weeks[1].a);
+            Assert.Equal(0, response[0].weeks[1].d);
+            Assert.Equal(0, response[0].weeks[1].c);
+            Assert.Equal(0, response[0].weeks[1].w);
+            Assert.Equal("2021/4/25", response[0].weeks[1].ws);
         }
     }
 }
