@@ -12,9 +12,11 @@ namespace project_manage_system_backend.Controllers
     public class RepoInfoController : ControllerBase
     {
         private readonly RepoInfoService _repoInfoService;
+        private readonly SonarqubeService _sonarqubeService;
         public RepoInfoController(PMSContext dbContext)
         {
             _repoInfoService = new RepoInfoService(dbContext);
+            _sonarqubeService = new SonarqubeService(dbContext);
         }
 
         [Authorize]
@@ -53,14 +55,14 @@ namespace project_manage_system_backend.Controllers
         [HttpGet("sonarqube/{repoId}")]
         public async Task<IActionResult> GetSonarqube(int repoid)
         {
-            return Ok(await _repoInfoService.GetSonarqubeInfo(repoid));
+            return Ok(await _sonarqubeService.GetSonarqubeInfoAsync(repoid));
         }
 
         [Authorize]
         [HttpGet("ishavesonarqube/{repoId}")]
         public async Task<IActionResult> IsHaveSonarqube(int repoid)
         {
-            return Ok(await _repoInfoService.IsHaveSonarqube(repoid));
+            return Ok(await _sonarqubeService.IsHaveSonarqube(repoid));
         }
     }
 }
