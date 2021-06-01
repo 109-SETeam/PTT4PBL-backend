@@ -33,8 +33,7 @@ namespace PMS_test.ControllersTest
         public RepoInfoServiceTests()
         {
             _dbContext = new PMSContext(new DbContextOptionsBuilder<PMSContext>()
-               .UseSqlite(CreateInMemoryDatabase())
-               .Options);
+               .UseSqlite(CreateInMemoryDatabase()).Options);
             _dbContext.Database.EnsureCreated();
             _client = CreateMockClient();
             _repoInfoService = new RepoInfoService(_dbContext, _client);

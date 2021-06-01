@@ -1,4 +1,4 @@
-﻿using project_manage_system_backend.Dtos;
+using project_manage_system_backend.Dtos;
 using project_manage_system_backend.Factory;
 using project_manage_system_backend.Models;
 using project_manage_system_backend.RepoInfo;
@@ -6,7 +6,6 @@ using project_manage_system_backend.Shares;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace project_manage_system_backend.Services

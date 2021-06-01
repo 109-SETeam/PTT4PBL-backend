@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace project_manage_system_backend.Dtos
 {
@@ -22,7 +22,7 @@ namespace project_manage_system_backend.Dtos
     {
         // First day of the week
         public string Week { get; set; }
-        
+
         public List<DayCommit> DetailDatas { get; set; }
     }
 
