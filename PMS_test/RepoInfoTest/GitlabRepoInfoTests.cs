@@ -9,10 +9,7 @@ using RichardSzalay.MockHttp;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Text.Json;
 using Xunit;
 
 namespace PMS_test.ServicesTest
@@ -23,7 +20,7 @@ namespace PMS_test.ServicesTest
         private readonly PMSContext _dbContext;
         private readonly HttpClient _client;
         private const string token = "access_token=nKswk3SkyZVyMR_q9KJ4";
-        private const string repoId = "0"; 
+        private const string repoId = "0";
         private readonly GitlabInfo _gitlabInfo;
         private readonly Repo _repo;
         public GitlabRepoInfoTests()
@@ -34,7 +31,7 @@ namespace PMS_test.ServicesTest
             _dbContext.Database.EnsureCreated();
             _client = CreateMockClient();
             _gitlabInfo = new GitlabInfo(token, _client);
-            _repo = new Repo { RepoId = repoId,  };
+            _repo = new Repo { RepoId = repoId, };
         }
 
         private static DbConnection CreateInMemoryDatabase()
@@ -71,7 +68,7 @@ namespace PMS_test.ServicesTest
                 email = "selab@gmail.com",
                 name = "selab"
             });
-                
+
             string commitsUrl = $"https://sgit.csie.ntut.edu.tw/gitlab/api/v4/projects/{repoId}/repository/commits?{token}&with_stats=true&per_page=100";
             string contributorUrl = $"https://sgit.csie.ntut.edu.tw/gitlab/api/v4/projects/{repoId}/repository/contributors?{token}";
 
@@ -81,7 +78,7 @@ namespace PMS_test.ServicesTest
             Dictionary<string, string> headers = new Dictionary<string, string>();
             headers.Add("X-Total-Pages", "2");
             mockHttp.When(HttpMethod.Get, commitsUrl).Respond(headers, "application/json", commitsResponse);
-            mockHttp.When(HttpMethod.Get, commitsUrl+"&page=2").Respond("application/json", commitsResponse);
+            mockHttp.When(HttpMethod.Get, commitsUrl + "&page=2").Respond("application/json", commitsResponse);
             mockHttp.When(HttpMethod.Get, contributorUrl).Respond("application/json", contributorResponse);
 
             return mockHttp.ToHttpClient();
@@ -92,16 +89,16 @@ namespace PMS_test.ServicesTest
         {
             var response = await _gitlabInfo.RequestCommit(_repo);
             List<WeekTotalData> weekTotalDatas = new List<WeekTotalData>();
-            weekTotalDatas.Add(new WeekTotalData { Total = 2, Week = new DateTime(2021, 4, 18).ToShortDateString()});
+            weekTotalDatas.Add(new WeekTotalData { Total = 2, Week = new DateTime(2021, 4, 18).ToShortDateString() });
             Assert.Equal(weekTotalDatas[0].Total, response.WeekTotalData[0].Total);
             Assert.Equal(weekTotalDatas[0].Week, response.WeekTotalData[0].Week);
 
             List<DayOfWeekData> dayOfWeekDatas = new List<DayOfWeekData>();
-            dayOfWeekDatas.Add(new DayOfWeekData 
+            dayOfWeekDatas.Add(new DayOfWeekData
             {
                 Week = weekTotalDatas[0].Week,
-                DetailDatas = new List<DayCommit> 
-                { 
+                DetailDatas = new List<DayCommit>
+                {
                     new DayCommit{ Day = "Sunday", Commit = 0},
                     new DayCommit{ Day = "Monday", Commit = 0},
                     new DayCommit{ Day = "Tuesday", Commit = 0},
