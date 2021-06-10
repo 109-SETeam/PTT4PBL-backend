@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace project_manage_system_backend.Dtos.Gitlab
 {
@@ -15,5 +16,6 @@ namespace project_manage_system_backend.Dtos.Gitlab
         public string committer_email { get; set; }
         public DateTime committed_date { get; set; }
         public Stats stats { get; set; }
+        public List<string> parent_ids { get; set; }
     }
 }

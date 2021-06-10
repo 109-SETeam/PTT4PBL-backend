@@ -25,12 +25,9 @@ namespace project_manage_system_backend.RepoInfo
             List<ResponseCodebaseDto> codebaseDtos = BuildResponseCodebaseDto(commits[^1].committed_date);
             foreach (var commit in commits)
             {
-                if (!commit.committer_name.ToLower().Equals("github"))
-                {
-                    var codebaseDto = codebaseDtos.Find(codebaseDto => codebaseDto.date.Equals(GetDateOfWeek(commit.committed_date).ToShortDateString()));
-                    codebaseDto.numberOfRowsAdded += commit.stats.additions;
-                    codebaseDto.numberOfRowsDeleted -= commit.stats.deletions;
-                }
+                var codebaseDto = codebaseDtos.Find(codebaseDto => codebaseDto.date.Equals(GetDateOfWeek(commit.committed_date).ToShortDateString()));
+                codebaseDto.numberOfRowsAdded += commit.stats.additions;
+                codebaseDto.numberOfRowsDeleted -= commit.stats.deletions;
             }
 
             int numberOfRows = 0;
@@ -123,7 +120,7 @@ namespace project_manage_system_backend.RepoInfo
             string commitsUrl = $"https://sgit.csie.ntut.edu.tw/gitlab/api/v4/projects/{repoId}/repository/commits?{token}&with_stats=true&per_page=100";
             var commitsResponse = await _httpClient.GetAsync(commitsUrl);
             string commitsContent = await commitsResponse.Content.ReadAsStringAsync();
-            var commitsResult = JsonSerializer.Deserialize<List<RequestCommitsDto>>(commitsContent);
+            var commitsResult = JsonSerializer.Deserialize<List<RequestCommitsDto>>(commitsContent).FindAll(commit => !(commit.parent_ids.Count > 1));
             var xTotalPages = Enumerable.ToList<string>(commitsResponse.Headers.GetValues("X-Total-Pages"));
             int xTotalPage = int.Parse(xTotalPages[0]);
 
@@ -131,7 +128,8 @@ namespace project_manage_system_backend.RepoInfo
             {
                 var response = await _httpClient.GetAsync($"{commitsUrl}&page={i}");
                 var content = await response.Content.ReadAsStringAsync();
-                commitsResult.AddRange(JsonSerializer.Deserialize<List<RequestCommitsDto>>(content).FindAll(commit => !commit.committer_name.ToLower().Equals("github")));
+                commitsResult.AddRange(JsonSerializer.Deserialize<List<RequestCommitsDto>>(content).
+                    FindAll(commit => !(commit.parent_ids.Count > 1)));
             }
             return commitsResult;
         }
