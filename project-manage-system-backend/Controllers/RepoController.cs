@@ -22,7 +22,7 @@ namespace project_manage_system_backend.Controllers
         [HttpPost]
         public async Task<IActionResult> AddRepo(AddRepoDto addRepoDto)
         {
-            var result = await _repoService.CheckGithubAndSonarqubeExist(addRepoDto);
+            var result = await _repoService.AddRepo(addRepoDto);
             return Ok(new ResponseDto { success = result.success, message = result.message });
         }
 

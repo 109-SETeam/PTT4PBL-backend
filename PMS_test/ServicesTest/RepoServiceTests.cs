@@ -130,7 +130,7 @@ namespace PMS_test.ControllersTest
                 isSonarqube = false
             };
 
-            var response = await _repoService.CheckGithubAndSonarqubeExist(noSonarqube);
+            var response = await _repoService.AddRepo(noSonarqube);
             Assert.False(response.success);
             Assert.Equal("Url Error", response.message);
         }
@@ -145,7 +145,7 @@ namespace PMS_test.ControllersTest
                 isSonarqube = true
             };
 
-            var response = await _repoService.CheckGithubAndSonarqubeExist(sonarqube);
+            var response = await _repoService.AddRepo(sonarqube);
             Assert.False(response.success);
             Assert.Equal("Sonarqube Error ", response.message);
 
@@ -161,11 +161,11 @@ namespace PMS_test.ControllersTest
                 url = _successFakeRepository,
                 isSonarqube = false
             };
-            var response = await _repoService.CheckGithubAndSonarqubeExist(noSonarqube);
+            var response = await _repoService.AddRepo(noSonarqube);
             Assert.True(response.success);
             Assert.Equal("Add Success", response.message);
 
-            response = await _repoService.CheckGithubAndSonarqubeExist(noSonarqube);
+            response = await _repoService.AddRepo(noSonarqube);
             Assert.False(response.success);
             Assert.Equal("Duplicate repo!", response.message);
         }
@@ -182,7 +182,7 @@ namespace PMS_test.ControllersTest
                 projectKey = "ppp",
                 accountColonPassword = "aaabbb"
             };
-            var response = await _repoService.CheckGithubAndSonarqubeExist(sonarqube);
+            var response = await _repoService.AddRepo(sonarqube);
             Assert.True(response.success);
             Assert.Equal("Add Success", response.message);
         }
