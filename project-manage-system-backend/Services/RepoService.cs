@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using project_manage_system_backend.Dtos;
+using project_manage_system_backend.Factory;
 using project_manage_system_backend.Models;
+using project_manage_system_backend.Repository;
 using project_manage_system_backend.Shares;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace project_manage_system_backend.Services
@@ -15,27 +15,54 @@ namespace project_manage_system_backend.Services
     public class RepoService : BaseService
     {
         private readonly HttpClient _httpClient;
+        private readonly RepoFactory _repoFactory;
         public RepoService(PMSContext dbContext, HttpClient client = null) : base(dbContext)
         {
             _httpClient = client ?? new HttpClient();
             _httpClient.Timeout = TimeSpan.FromSeconds(3);
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", "request");
+            _repoFactory = new RepoFactory();
         }
 
-        private async Task<ResponseRepoInfoDto> CheckRepoExist(string url)
+        private async Task<ResponseRepoInfoDto> GetRepositoryInformation(string url)
         {
-            const string GITHUB_COM = "github.com";
-            string matchPatten = $@"^http(s)?://{GITHUB_COM}/([\w-]+.)+[\w-]+(/[\w- ./?%&=])?$";
-            if (!Regex.IsMatch(url, matchPatten))
-                return new ResponseRepoInfoDto() { success = false, message = "Url Error" };
+            IRepo repo = _repoFactory.CreateRepoBy(url, _httpClient, null);
+            return await repo.GetRepositoryInformation(url);
+        }
 
-            url = url.Replace(".git", "");
-            url = url.Replace("github.com", "api.github.com/repos");
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", "request");
-            var result = await _httpClient.GetAsync(url);
-            string content = await result.Content.ReadAsStringAsync();
-            var msg = JsonSerializer.Deserialize<ResponseRepoInfoDto>(content);
-            msg.success = string.IsNullOrEmpty(msg.message);
-            return msg;
+        public async Task<ResponseDto> AddRepo(AddRepoDto addRepoDto)
+        {
+            try
+            {
+                var githubResponse = await GetRepositoryInformation(addRepoDto.url);
+                ResponseDto result = new ResponseDto() { success = githubResponse.success, message = githubResponse.message };
+                if (githubResponse.success)
+                {
+                    Repo model = MakeRepoModel(githubResponse, addRepoDto);
+
+                    CreateRepo(model);
+                    result.message = "Add Success";
+                    return result;
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDto() { message = ex.Message, success = false };
+            }
+        }
+
+        private Repo MakeRepoModel(ResponseRepoInfoDto githubResponse, AddRepoDto addRepoDto)
+        {
+            var project = GetProjectByProjectId(addRepoDto.projectId);
+            return new Repo()
+            {
+                Name = githubResponse.name,
+                Owner = githubResponse.owner.login ?? githubResponse.owner.name,
+                Url = githubResponse.html_url ?? githubResponse.web_url,
+                Project = project,
+                RepoId = githubResponse.id.ToString()
+            };
         }
 
         private void CreateRepo(Repo model)
@@ -61,7 +88,6 @@ namespace project_manage_system_backend.Services
         public Project GetProjectByProjectId(int id)
         {
             var project = _dbContext.Projects.Include(r => r.Repositories).Where(p => p.ID == id).First();
-            //var project = _dbContext.Projects.Single(p => p.ID == id);
             return project;
         }
 
@@ -77,74 +103,6 @@ namespace project_manage_system_backend.Services
             {
                 return false;
             }
-        }
-
-        private async Task<ResponseDto> CheckSonarqubeAliveAndProjectExisted(AddRepoDto addRepoDto)
-        {
-            ResponseDto responseDto = new ResponseDto() { success = false, message = "Sonarqube Error " };
-            try
-            {
-                var sonarqubeUrl = addRepoDto.sonarqubeUrl + $"api/project_analyses/search?project={addRepoDto.projectKey}";
-                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Basic {addRepoDto.accountColonPassword}");
-                var result = await _httpClient.GetAsync(sonarqubeUrl);
-                responseDto.success = result.IsSuccessStatusCode;
-                responseDto.message = result.IsSuccessStatusCode ? "Sonarqube online" : "Sonarqube Project doesn't exist";
-                return responseDto;
-            }
-            catch (Exception ex)
-            {
-                responseDto.message.Insert(0, ex.Message);
-                return responseDto;
-            }
-        }
-
-        public async Task<ResponseDto> CheckGithubAndSonarqubeExist(AddRepoDto addRepoDto)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(addRepoDto.sonarqubeUrl) && !addRepoDto.sonarqubeUrl.EndsWith("/"))
-                    addRepoDto.sonarqubeUrl += "/";
-                var githubResponse = await CheckRepoExist(addRepoDto.url);
-                var sonarqubeResponse = await CheckSonarqubeAliveAndProjectExisted(addRepoDto);
-                ResponseDto result = new ResponseDto() { success = githubResponse.success, message = githubResponse.message };
-                if (githubResponse.success)
-                {//github repo存在
-                    if ((!addRepoDto.isSonarqube) || sonarqubeResponse.success)
-                    {//有sonarqube＆sonarqube存在 或 沒有sonarqube
-                        Repo model = MakeRepoModel(githubResponse, addRepoDto);
-                        CreateRepo(model);
-                        result.message = "Add Success";
-                        return result;
-                    }
-                    else
-                    {//有sonarqube 但是sonarqube有問題
-                        result.success = sonarqubeResponse.success;
-                        result.message = sonarqubeResponse.message;
-                    }
-                }
-                return result;
-            }
-            catch (Exception ex)
-            {
-                return new ResponseDto() { message = ex.Message, success = false };
-            }
-
-        }
-
-        private Repo MakeRepoModel(ResponseRepoInfoDto githubResponse, AddRepoDto addRepoDto)
-        {
-            var project = GetProjectByProjectId(addRepoDto.projectId);
-            return new Repo()
-            {
-                Name = githubResponse.name,
-                Owner = githubResponse.owner.login,
-                Url = githubResponse.html_url,
-                Project = project,
-                IsSonarqube = addRepoDto.isSonarqube,
-                SonarqubeUrl = addRepoDto.sonarqubeUrl,
-                AccountColonPw = addRepoDto.accountColonPassword,
-                ProjectKey = addRepoDto.projectKey
-            };
         }
     }
 }

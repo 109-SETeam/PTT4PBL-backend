@@ -19,9 +19,29 @@ namespace project_manage_system_backend.RepoInfo
         {
         }
 
-        public override Task<List<ResponseCodebaseDto>> RequestCodebase(Repo repo)
+        public override async Task<List<ResponseCodebaseDto>> RequestCodebase(Repo repo)
         {
-            throw new NotImplementedException();
+            var commits = await GetRequestCommits(repo.RepoId);
+            List<ResponseCodebaseDto> codebaseDtos = BuildResponseCodebaseDto(commits[^1].committed_date);
+            foreach (var commit in commits)
+            {
+                if (!commit.committer_name.ToLower().Equals("github"))
+                {
+                    var codebaseDto = codebaseDtos.Find(codebaseDto => codebaseDto.date.Equals(GetDateOfWeek(commit.committed_date).ToShortDateString()));
+                    codebaseDto.numberOfRowsAdded += commit.stats.additions;
+                    codebaseDto.numberOfRowsDeleted -= commit.stats.deletions;
+                }
+            }
+
+            int numberOfRows = 0;
+            foreach (var codebaseDto in codebaseDtos)
+            {
+                string[] splitedString = codebaseDto.date.Split("/");
+                codebaseDto.date = $"{splitedString[1].PadLeft(2, '0')}/{splitedString[2].PadLeft(2, '0')}";
+                numberOfRows += codebaseDto.numberOfRowsAdded + codebaseDto.numberOfRowsDeleted;
+                codebaseDto.numberOfRows = numberOfRows;
+            }
+            return codebaseDtos;
         }
 
         public override async Task<RequestCommitInfoDto> RequestCommit(Repo repo)
@@ -111,7 +131,7 @@ namespace project_manage_system_backend.RepoInfo
             {
                 var response = await _httpClient.GetAsync($"{commitsUrl}&page={i}");
                 var content = await response.Content.ReadAsStringAsync();
-                commitsResult.AddRange(JsonSerializer.Deserialize<List<RequestCommitsDto>>(content));
+                commitsResult.AddRange(JsonSerializer.Deserialize<List<RequestCommitsDto>>(content).FindAll(commit => !commit.committer_name.ToLower().Equals("github")));
             }
             return commitsResult;
         }
@@ -119,12 +139,41 @@ namespace project_manage_system_backend.RepoInfo
         private List<Week> BuildWeeks(DateTime commitDate)
         {
             List<Week> weeks = new List<Week>();
+            var vs = BuildFirstDaysOfWeeks(commitDate);
+
+            foreach (var v in vs)
+            {
+                weeks.Add(new Week { ws = v });
+            }
+
+            return weeks;
+        }
+
+        private List<ResponseCodebaseDto> BuildResponseCodebaseDto(DateTime commitDate)
+        {
+            List<ResponseCodebaseDto> codebaseDtos = new List<ResponseCodebaseDto>();
+            var weeks = BuildFirstDaysOfWeeks(commitDate);
+            foreach (var week in weeks)
+            {
+                codebaseDtos.Add(new ResponseCodebaseDto
+                {
+                    date = week,
+                    numberOfRows = 0,
+                    numberOfRowsAdded = 0,
+                    numberOfRowsDeleted = 0
+                });
+            }
+            return codebaseDtos;
+        }
+
+        private List<string> BuildFirstDaysOfWeeks(DateTime commitDate)
+        {
+            List<string> weeks = new List<string>();
             var dateOfCommitWeek = GetDateOfWeek(commitDate);
             var dateOfCurrentWeek = GetDateOfWeek(DateTime.Today);
-
             while (dateOfCommitWeek <= dateOfCurrentWeek)
             {
-                weeks.Add(new Week { ws = dateOfCommitWeek.ToShortDateString() });
+                weeks.Add(dateOfCommitWeek.ToShortDateString());
                 dateOfCommitWeek = dateOfCommitWeek.AddDays(7);
             }
 
@@ -133,7 +182,7 @@ namespace project_manage_system_backend.RepoInfo
 
         private DateTime GetDateOfWeek(DateTime dateTime)
         {
-            return dateTime.AddDays(-((int)dateTime.DayOfWeek));
+            return dateTime.AddDays(-((int)dateTime.DayOfWeek)).Date;
         }
 
         private void MapCommitsToWeeks(List<RequestCommitsDto> commitsResult, List<ContributorsCommitActivityDto> contributors)
