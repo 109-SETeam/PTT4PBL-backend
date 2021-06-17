@@ -105,7 +105,7 @@ namespace project_manage_system_backend.RepoInfo
             {
                 contributors.Add(new ContributorsCommitActivityDto
                 {
-                    author = new Author { login = item.name, email = item.email },
+                    author = new Dtos.Author { login = item.name, email = item.email },
                     // ^1 = commitsResult.Count - 1
                     weeks = BuildWeeks(commitsResult[^1].committed_date)
                 });
@@ -205,9 +205,13 @@ namespace project_manage_system_backend.RepoInfo
             }
         }
 
-        public override Task<RepoIssuesDto> RequestIssue(Repo repo)
+        public override async Task<RepoIssuesDto> RequestIssue(Repo repo)
         {
-            throw new NotImplementedException();
+            string issueUrl = $"https://sgit.csie.ntut.edu.tw/gitlab/api/v4/projects/{repo.RepoId}/issues?{token}";
+            var issueResponse = await _httpClient.GetAsync(issueUrl);
+            string issueContent = await issueResponse.Content.ReadAsStringAsync();
+            var issueResult = JsonSerializer.Deserialize<List<RequestIssueDto>>(issueContent);
+            return null;
         }
     }
 }
