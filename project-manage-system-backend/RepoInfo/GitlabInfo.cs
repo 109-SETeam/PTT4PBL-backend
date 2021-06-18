@@ -1,4 +1,4 @@
-using project_manage_system_backend.Dtos;
+﻿using project_manage_system_backend.Dtos;
 using project_manage_system_backend.Dtos.Gitlab;
 using project_manage_system_backend.Models;
 using project_manage_system_backend.Shares;
@@ -112,7 +112,26 @@ namespace project_manage_system_backend.RepoInfo
             }
             MapCommitsToWeeks(commitsResult, contributors);
 
+            List<Dtos.Gitlab.User> gitlabUsers = await GetUsers(repo.RepoId);
+            foreach (var user in gitlabUsers)
+            {
+                var selectedUser = contributors.Find(contributor => user.username.Equals(contributor.author.login));
+                if (selectedUser != null)
+                {
+                    selectedUser.author.html_url = user.web_url;
+                    selectedUser.author.avatar_url = user.avatar_url;
+                }
+            }
             return contributors;
+        }
+
+        private async Task<List<Dtos.Gitlab.User>> GetUsers(string repoId)
+        {
+            string url = $"https://sgit.csie.ntut.edu.tw/gitlab/api/v4/projects/{repoId}/users?{token}";
+            var response = await _httpClient.GetAsync(url);
+            var content = await response.Content.ReadAsStringAsync();
+            var users = JsonSerializer.Deserialize<List<Dtos.Gitlab.User>>(content);
+            return users;
         }
 
         private async Task<List<RequestCommitsDto>> GetRequestCommits(string repoId)
