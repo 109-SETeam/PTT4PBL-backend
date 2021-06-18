@@ -126,30 +126,12 @@ namespace PMS_test.ControllersTest
             AddRepoDto noSonarqube = new AddRepoDto()
             {
                 projectId = (await _dbContext.Projects.ToListAsync())[0].ID,
-                url = "",
-                isSonarqube = false
+                url = ""
             };
 
             var response = await _repoService.AddRepo(noSonarqube);
             Assert.False(response.success);
-            Assert.Equal("Url Error", response.message);
-        }
-
-        [Fact]
-        async public void TestCheckGithubAndSonarqubeExistFail2()
-        {
-            AddRepoDto sonarqube = new AddRepoDto()
-            {
-                projectId = (await _dbContext.Projects.ToListAsync())[0].ID,
-                url = _successFakeRepository,
-                isSonarqube = true
-            };
-
-            var response = await _repoService.AddRepo(sonarqube);
-            Assert.False(response.success);
-            Assert.Equal("Sonarqube Error ", response.message);
-
-
+            Assert.Equal("Service not support", response.message);
         }
 
         [Fact]
@@ -158,8 +140,7 @@ namespace PMS_test.ControllersTest
             AddRepoDto noSonarqube = new AddRepoDto()
             {
                 projectId = (await _dbContext.Projects.ToListAsync())[0].ID,
-                url = _successFakeRepository,
-                isSonarqube = false
+                url = _successFakeRepository
             };
             var response = await _repoService.AddRepo(noSonarqube);
             Assert.True(response.success);
@@ -176,11 +157,7 @@ namespace PMS_test.ControllersTest
             AddRepoDto sonarqube = new AddRepoDto()
             {
                 projectId = (await _dbContext.Projects.ToListAsync())[0].ID,
-                url = _successFakeRepository,
-                isSonarqube = true,
-                sonarqubeUrl = "http://192.168.0.1",
-                projectKey = "ppp",
-                accountColonPassword = "aaabbb"
+                url = _successFakeRepository
             };
             var response = await _repoService.AddRepo(sonarqube);
             Assert.True(response.success);

@@ -52,6 +52,7 @@ namespace PMS_test.ServicesTest
                 committed_date = new DateTime(2021, 4, 22),
                 committer_email = "selab@gmail.com",
                 committer_name = "selab",
+                parent_ids = new List<string>(),
                 stats = new Stats
                 {
                     additions = 52,
