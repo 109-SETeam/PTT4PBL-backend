@@ -111,7 +111,7 @@ namespace project_manage_system_backend.RepoInfo
                 });
             }
             MapCommitsToWeeks(commitsResult, contributors);
-
+            contributors.Sort((r1, r2) => r2.total.CompareTo(r1.total));
             List<Dtos.Gitlab.User> gitlabUsers = await GetUsers(repo.RepoId);
             foreach (var user in gitlabUsers)
             {
