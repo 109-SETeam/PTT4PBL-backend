@@ -1,4 +1,4 @@
-﻿using project_manage_system_backend.Dtos;
+using project_manage_system_backend.Dtos;
 using project_manage_system_backend.Dtos.Gitlab;
 using project_manage_system_backend.Models;
 using project_manage_system_backend.Shares;
@@ -211,7 +211,72 @@ namespace project_manage_system_backend.RepoInfo
             var issueResponse = await _httpClient.GetAsync(issueUrl);
             string issueContent = await issueResponse.Content.ReadAsStringAsync();
             var issueResult = JsonSerializer.Deserialize<List<RequestIssueDto>>(issueContent);
-            return null;
+            List<ResponseRepoIssuesDto> openIssues = new List<ResponseRepoIssuesDto>();
+            List<ResponseRepoIssuesDto> closeIssues = new List<ResponseRepoIssuesDto>();
+            List<double> closedTime = new List<double>();
+            RepoIssuesDto repoIssues = new RepoIssuesDto
+            {
+                openIssues = openIssues,
+                closeIssues = closeIssues
+            };
+
+            foreach (var issue in issueResult)
+            {
+                if (issue.state.Equals("opened"))
+                {
+                    openIssues.Add(CreateResponseRepoIssuesDto(issue));
+                }
+                else //closed
+                {
+                    closeIssues.Add(CreateResponseRepoIssuesDto(issue));
+                }
+            }
+
+
+
+            foreach (var item in repoIssues.closeIssues)
+            {
+                DateTime closed = Convert.ToDateTime(item.closed_at);
+                DateTime created = Convert.ToDateTime(item.created_at);
+
+                item.closed_at = closed.ToString("yyyy-MM-dd HH:mm:ss");
+                item.created_at = created.ToString("yyyy-MM-dd HH:mm:ss");
+
+                closedTime.Add((closed - created).TotalSeconds);
+            }
+            foreach (var item in repoIssues.openIssues)
+            {
+                item.created_at = Convert.ToDateTime(item.created_at).ToString("yyyy-MM-dd HH:mm:ss");
+            }
+
+            if (closedTime.Count != 0)
+            {
+                repoIssues.averageDealWithIssueTime = TimeSpan.FromSeconds(closedTime.Average()).ToString(@"dd\.hh\:mm\:\:ss\.\.");
+                repoIssues.averageDealWithIssueTime = repoIssues.averageDealWithIssueTime.Replace("..", "Seconds").Replace("::", "Minute(s) ").Replace(":", "Hour(s) ").Replace(".", "Day(s) ");
+            }
+            else
+            {
+                repoIssues.averageDealWithIssueTime = "No Data";
+            }
+            return repoIssues;
+        }
+
+        private ResponseRepoIssuesDto CreateResponseRepoIssuesDto(RequestIssueDto issue)
+        {
+            return new ResponseRepoIssuesDto
+            {
+                number = issue.iid,
+                title = issue.title,
+                state = issue.state,
+                html_url = issue.web_url,
+                created_at = issue.created_at,
+                closed_at = issue.closed_at,
+                user = new user
+                {
+                    html_url = issue.author.web_url,
+                    login = issue.author.username
+                }
+            };
         }
     }
 }
