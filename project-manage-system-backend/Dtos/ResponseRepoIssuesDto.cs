@@ -1,4 +1,4 @@
-﻿namespace project_manage_system_backend.Dtos
+namespace project_manage_system_backend.Dtos
 {
     public class user
     {

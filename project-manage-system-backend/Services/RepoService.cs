@@ -55,10 +55,15 @@ namespace project_manage_system_backend.Services
         private Repo MakeRepoModel(ResponseRepoInfoDto githubResponse, AddRepoDto addRepoDto)
         {
             var project = GetProjectByProjectId(addRepoDto.projectId);
+            string owner = string.Empty;
+            if (githubResponse.owner != null)
+            {
+                owner = githubResponse.owner.login ?? githubResponse.owner.name;
+            }
             return new Repo()
             {
                 Name = githubResponse.name,
-                Owner = githubResponse.owner.login ?? githubResponse.owner.name,
+                Owner = owner,
                 Url = githubResponse.html_url ?? githubResponse.web_url,
                 Project = project,
                 RepoId = githubResponse.id.ToString()
