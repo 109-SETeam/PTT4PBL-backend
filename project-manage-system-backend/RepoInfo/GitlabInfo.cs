@@ -112,16 +112,16 @@ namespace project_manage_system_backend.RepoInfo
             }
             MapCommitsToWeeks(commitsResult, contributors);
             contributors.Sort((r1, r2) => r2.total.CompareTo(r1.total));
-            List<Dtos.Gitlab.User> gitlabUsers = await GetUsers(repo.RepoId);
-            foreach (var user in gitlabUsers)
-            {
-                var selectedUser = contributors.Find(contributor => user.username.Equals(contributor.author.login));
-                if (selectedUser != null)
-                {
-                    selectedUser.author.html_url = user.web_url;
-                    selectedUser.author.avatar_url = user.avatar_url;
-                }
-            }
+            //List<Dtos.Gitlab.User> gitlabUsers = await GetUsers(repo.RepoId);
+            //foreach (var user in gitlabUsers)
+            //{
+            //    var selectedUser = contributors.Find(contributor => user.username.Equals(contributor.author.login));
+            //    if (selectedUser != null)
+            //    {
+            //        selectedUser.author.html_url = user.web_url;
+            //        selectedUser.author.avatar_url = user.avatar_url;
+            //    }
+            //}
             return contributors;
         }
 
