@@ -64,5 +64,11 @@ namespace project_manage_system_backend.Controllers
         {
             return Ok(await _sonarqubeService.IsHaveSonarqube(repoid));
         }
+
+        [HttpGet("sonarqube/codesmell/{repoId}")]
+        public async Task<IActionResult> GetSonarqubeCodeSmell(int repoid)
+        {
+            return Ok(await _sonarqubeService.GetSonarqubeCodeSmellAsync(repoid));
+        }
     }
 }
