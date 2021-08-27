@@ -2,8 +2,7 @@ using System.Collections.Generic;
 
 namespace project_manage_system_backend.Dtos
 {
-
-    public class CodeSmellDto
+    public class CodeSmellDataDto
     {
         public int total { get; set; }
         public List<Issues> issues { get; set; }
@@ -17,5 +16,4 @@ namespace project_manage_system_backend.Dtos
         public int line { get; set; }
         public string message { get; set; }
     }
-
 }
