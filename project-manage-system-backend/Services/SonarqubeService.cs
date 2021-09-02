@@ -36,6 +36,9 @@ namespace project_manage_system_backend.Services
 
         public async Task<Dictionary<string, List<Issues>>> GetSonarqubeCodeSmellAsync(int repoId)
         {
+            Repo repo = _dbContext.Repositories.Find(repoId);
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", "request");
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Basic {repo.AccountColonPw}");
             var result = await RequestCodeSmellData(repoId);
             int totalPages = (result.total - 1) / PAGE_SIZE + 1;
 
@@ -74,9 +77,7 @@ namespace project_manage_system_backend.Services
             string sonarqubeHostUrl = repo.SonarqubeUrl;
             string apiUrl = "api/issues/search?";
             string projectKey = repo.ProjectKey;
-            string query = $"componentKeys=PMS_109&s=FILE_LINE&resolved=false&ps={PAGE_SIZE}&organization=default-organization&facets=severities%2Ctypes&types=CODE_SMELL";
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", "request");
-            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Basic {repo.AccountColonPw}");
+            string query = $"componentKeys={projectKey}&s=FILE_LINE&resolved=false&ps={PAGE_SIZE}&organization=default-organization&facets=severities%2Ctypes&types=CODE_SMELL";
             var response = await _httpClient.GetAsync($"{sonarqubeHostUrl}{apiUrl}projectKeys={projectKey}&{query}&p={pageIndex}");
             string content = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<CodeSmellDataDto>(content);
