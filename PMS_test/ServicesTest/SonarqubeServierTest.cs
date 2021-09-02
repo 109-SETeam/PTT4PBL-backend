@@ -1,9 +1,12 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using project_manage_system_backend.Dtos;
 using project_manage_system_backend.Models;
 using project_manage_system_backend.Services;
 using project_manage_system_backend.Shares;
 using RichardSzalay.MockHttp;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Net.Http;
 using Xunit;
@@ -20,10 +23,9 @@ namespace PMS_test.ServicesTest
         private readonly PMSContext _dbContext;
         private readonly HttpClient _client;
         private readonly SonarqubeService _sonarqubeService;
+        private const string COMPONENT_NAME = "PTT4PBL";
         private readonly string _sonarqubeHostURL = "http://192.168.1.250:9000/";
-        private readonly string apiURL = "api/measures/search?";
-        private readonly string query = "&metricKeys=bugs,vulnerabilities,code_smells,duplicated_lines_density,coverage";
-        private Repo _reop1;
+        private Repo _repo1;
         private Repo _repo2;
 
         public SonarqubeServierTest()
@@ -38,7 +40,7 @@ namespace PMS_test.ServicesTest
 
         private void InitialDatabase()
         {
-            _reop1 = new Repo
+            _repo1 = new Repo
             {
                 Name = _name,
                 Owner = _owner,
@@ -56,22 +58,113 @@ namespace PMS_test.ServicesTest
                 Url = "https://github.com/" + _owner + "/" + _name + "",
                 IsSonarqube = false
             };
-            _dbContext.Repositories.Add(_reop1);
+            _dbContext.Repositories.Add(_repo1);
             _dbContext.Repositories.Add(_repo2);
             _dbContext.SaveChanges();
         }
 
+        private string getResponseOfOverall()
+        {
+            const string COMPONENT = "PMS_109";
+            List<Measure> measures = new List<Measure>()
+            {
+                new Measure
+                {
+                    metric = "bugs",
+                    bestValue = true,
+                    component = COMPONENT,
+                    value = "0"
+                },
+                new Measure
+                {
+                    metric = "code_smells",
+                    bestValue = false,
+                    component = COMPONENT,
+                    value = "51"
+                },
+                new Measure
+                {
+                    metric = "coverage",
+                    bestValue = false,
+                    component = COMPONENT,
+                    value = "88.5"
+                },
+                new Measure
+                {
+                    metric = "duplicated_lines_density",
+                    bestValue = true,
+                    component = COMPONENT,
+                    value = "0.0"
+                },
+                new Measure
+                {
+                    metric = "vulnerabilities",
+                    bestValue = true,
+                    component = COMPONENT,
+                    value = "0"
+                },
+            };
+            SonarqubeInfoDto sonarqubeInfoDto = new SonarqubeInfoDto
+            {
+                measures = measures,
+                projectName = COMPONENT
+            };
+
+            return JsonConvert.SerializeObject(sonarqubeInfoDto);
+        }
+
+        private string getResponseOfCodeSmell()
+        {
+            const int TOTAL = 501;
+            List<Issues> issues = new List<Issues>
+            {
+                new Issues
+                {
+                    key = "01fc972e-2a3c-433e-bcae-0bd7f88f5123",
+                    component = COMPONENT_NAME,
+                    line = 81,
+                    message = "'System.Exception' should not be thrown by user code.",
+                    severity = "MINOR"
+                },
+                new Issues
+                {
+                    key = "01fc972e-2a3c-433e-bcae-0bd7f88f5123",
+                    component = COMPONENT_NAME,
+                    line = 81,
+                    message = "'System.Exception' should not be thrown by user code.",
+                    severity = "MINOR"
+                },
+            };
+            CodeSmellDataDto codeSmellDataDto = new CodeSmellDataDto
+            {
+                total = TOTAL,
+                issues = issues
+            };
+
+            string responseData = JsonConvert.SerializeObject(codeSmellDataDto);
+
+            return responseData;
+        }
+
         private HttpClient CreateMockClient()
         {
+            string apiURL = "api/measures/search?";
+            string query = "&metricKeys=bugs,vulnerabilities,code_smells,duplicated_lines_density,coverage";
             var mockHttp = new MockHttpMessageHandler();
-            string responseData = "{\"measures\":" +
-                "[{\"metric\":\"bugs\",\"value\":\"0\",\"component\":\"PMS_109\",\"bestValue\":true}," +
-                "{\"metric\":\"code_smells\",\"value\":\"51\",\"component\":\"PMS_109\",\"bestValue\":false}," +
-                "{\"metric\":\"coverage\",\"value\":\"88.5\",\"component\":\"PMS_109\",\"bestValue\":false}," +
-                "{\"metric\":\"duplicated_lines_density\",\"value\":\"0.0\",\"component\":\"PMS_109\",\"bestValue\":true}," +
-                "{\"metric\":\"vulnerabilities\",\"value\":\"0\",\"component\":\"PMS_109\",\"bestValue\":true}]}";
+            string responseData = getResponseOfOverall();
 
-            mockHttp.When(HttpMethod.Get, $"{_sonarqubeHostURL}{apiURL}projectKeys={_reop1.ProjectKey}{query}").Respond("application/json", responseData);
+            mockHttp.When(HttpMethod.Get, $"{_sonarqubeHostURL}{apiURL}projectKeys={_repo1.ProjectKey}{query}")
+                .Respond("application/json", responseData);
+
+            const int PAGE_SIZE = 500;
+            apiURL = "api/issues/search?";
+            query = $"&componentKeys={_repo1.ProjectKey}&s=FILE_LINE&resolved=false&ps={PAGE_SIZE}&organization=default-organization&facets=severities%2Ctypes&types=CODE_SMELL";
+            responseData = getResponseOfCodeSmell();
+
+            mockHttp.When(HttpMethod.Get, $"{_sonarqubeHostURL}{apiURL}projectKeys={_repo1.ProjectKey}{query}")
+                .Respond("appication/json", responseData);
+            mockHttp.When(HttpMethod.Get, $"{_sonarqubeHostURL}{apiURL}projectKeys={_repo1.ProjectKey}{query}&p=2")
+                .Respond("appication/json", responseData);
 
             return mockHttp.ToHttpClient();
         }
@@ -88,7 +181,7 @@ namespace PMS_test.ServicesTest
         [Fact]
         public async void TestGetSonarqubeInfoAsync()
         {
-            var response = await _sonarqubeService.GetSonarqubeInfoAsync(_reop1.ID);
+            var response = await _sonarqubeService.GetSonarqubeInfoAsync(_repo1.ID);
             Assert.Equal("PMS_109", response.projectName);
             Assert.Equal(5, response.measures.Count);
 
@@ -121,13 +214,32 @@ namespace PMS_test.ServicesTest
         [Fact]
         public async void TestIsHaveSonarqubeShouldReturnTrue()
         {
-            Assert.True(await _sonarqubeService.IsHaveSonarqube(_reop1.ID));
+            Assert.True(await _sonarqubeService.IsHaveSonarqube(_repo1.ID));
         }
 
         [Fact]
         public async void TestIsHaveSonarqubeShouldReturnFalse()
         {
             Assert.False(await _sonarqubeService.IsHaveSonarqube(_repo2.ID));
+        }
+
+        [Fact]
+        public async void TestGetSonarqubeCodeSmellAsync()
+        {
+            var response = await _sonarqubeService.GetSonarqubeCodeSmellAsync(_repo1.ID);
+            var issues = response[COMPONENT_NAME];
+
+            Assert.Equal("01fc972e-2a3c-433e-bcae-0bd7f88f5123", issues[0].key);
+            Assert.Equal("MINOR", issues[0].severity);
+            Assert.Equal(COMPONENT_NAME, issues[0].component);
+            Assert.Equal(81, issues[0].line);
+            Assert.Equal("'System.Exception' should not be thrown by user code.", issues[0].message);
+
+            Assert.Equal("01fc972e-2a3c-433e-bcae-0bd7f88f5123", issues[1].key);
+            Assert.Equal("MINOR", issues[1].severity);
+            Assert.Equal(COMPONENT_NAME, issues[1].component);
+            Assert.Equal(81, issues[1].line);
+            Assert.Equal("'System.Exception' should not be thrown by user code.", issues[1].message);
         }
     }
 }
