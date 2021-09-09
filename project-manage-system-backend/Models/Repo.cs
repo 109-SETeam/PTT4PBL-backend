@@ -33,6 +33,9 @@
         /// </summary>
         public string ProjectKey { get; set; }
 
+        /// <summary>
+        /// gitlab repository id
+        /// </summary>
         public string RepoId { get; set; }
     }
 }

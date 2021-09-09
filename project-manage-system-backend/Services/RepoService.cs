@@ -30,19 +30,46 @@ namespace project_manage_system_backend.Services
             return await repo.GetRepositoryInformation(url);
         }
 
+        private async Task<ResponseDto> CheckSonarqubeAliveAndProjectExisted(AddRepoDto addRepoDto)
+        {
+            ResponseDto responseDto = new ResponseDto() { success = false, message = "Sonarqube Error " };
+            try
+            {
+                var sonarqubeUrl = addRepoDto.sonarqubeUrl + $"api/project_analyses/search?project={addRepoDto.projectKey}";
+                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Basic {addRepoDto.accountColonPassword}");
+                var result = await _httpClient.GetAsync(sonarqubeUrl);
+                responseDto.success = result.IsSuccessStatusCode;
+                responseDto.message = result.IsSuccessStatusCode ? "Sonarqube online" : "Sonarqube Project doesn't exist";
+                return responseDto;
+            }
+            catch (Exception ex)
+            {
+                responseDto.message.Insert(0, ex.Message);
+                return responseDto;
+            }
+        }
+
         public async Task<ResponseDto> AddRepo(AddRepoDto addRepoDto)
         {
             try
             {
                 var githubResponse = await GetRepositoryInformation(addRepoDto.url);
+                var sonarqubeResponse = await CheckSonarqubeAliveAndProjectExisted(addRepoDto);
                 ResponseDto result = new ResponseDto() { success = githubResponse.success, message = githubResponse.message };
                 if (githubResponse.success)
-                {
-                    Repo model = MakeRepoModel(githubResponse, addRepoDto);
-
-                    CreateRepo(model);
-                    result.message = "Add Success";
-                    return result;
+                {// github repo存在
+                    if ((!addRepoDto.isSonarqube) || sonarqubeResponse.success)
+                    {// 有sonarqube＆sonarqube存在 或 沒有sonarqube
+                        Repo model = MakeRepoModel(githubResponse, addRepoDto);
+                        CreateRepo(model);
+                        result.message = "Add Success";
+                        return result;
+                    }
+                    else
+                    {// 有sonarqube 但是sonarqube有問題
+                        result.success = sonarqubeResponse.success;
+                        result.message = sonarqubeResponse.message;
+                    }
                 }
                 return result;
             }
@@ -66,7 +93,11 @@ namespace project_manage_system_backend.Services
                 Owner = owner,
                 Url = githubResponse.html_url ?? githubResponse.web_url,
                 Project = project,
-                RepoId = githubResponse.id.ToString()
+                RepoId = githubResponse.id.ToString(),
+                IsSonarqube = addRepoDto.isSonarqube,
+                SonarqubeUrl = addRepoDto.sonarqubeUrl,
+                AccountColonPw = addRepoDto.accountColonPassword,
+                ProjectKey = addRepoDto.projectKey
             };
         }
 
