@@ -49,8 +49,9 @@ namespace project_manage_system_backend
             }
             else
             {
+                ServerVersion serverVersion = new MySqlServerVersion("10.4.17");
                 services.AddDbContext<PMSContext>(options =>
-                options.UseSqlite("Data Source=PMS_Database.db"));
+                options.UseMySql(Configuration.GetConnectionString("DefaultConnection"), serverVersion));
             }
 
             services.AddSingleton<JwtHelper>();
